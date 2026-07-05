@@ -1,0 +1,2543 @@
+{
+  "ts": "2026-07-05T14:26:53.291Z",
+  "tick": 3,
+  "counts": {
+    "ripe": 1,
+    "holding": 1,
+    "parked": 120,
+    "waiting": 0,
+    "done": 0,
+    "external": 136,
+    "wedges": 0
+  },
+  "ripe": [
+    {
+      "goal": 179,
+      "title": "OL02-7: Quota-mode test + scheduling decision (post-2026-06-15)",
+      "goalType": "delivery",
+      "focus": null,
+      "routeFloor": "inline"
+    }
+  ],
+  "holding": [
+    {
+      "goal": 122,
+      "title": "AI generation eval rig: real-API dispatch + commit-pinned dashboard (#107 phase 3b)",
+      "goalType": "delivery",
+      "focus": null,
+      "routeFloor": "fullteam"
+    }
+  ],
+  "parked": [
+    {
+      "goal": 14,
+      "title": "Workout session UI and state machine",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:51:04Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 16,
+      "title": "Mid-workout adaptation",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:51:36Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 18,
+      "title": "Block and cycle reviews with adherence monitoring",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:52:16Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 19,
+      "title": "Pre-workout exercise actions",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:52:33Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 20,
+      "title": "Disruption management",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:52:44Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 21,
+      "title": "Disruption replanning",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:53:03Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 22,
+      "title": "Notification system and Inngest job orchestration",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:53:16Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 23,
+      "title": "WhatsApp integration",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:53:33Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 24,
+      "title": "Progress dashboard with AI narrative",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:53:43Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 25,
+      "title": "PWA and offline hardening",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:54:03Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 26,
+      "title": "Deload skill acquisition",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-03-29T20:54:15Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 40,
+      "title": "Athlete profile, goal & location management",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-04T06:42:54Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 41,
+      "title": "Validation: fatigue/intensity sequencing check",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-04T08:56:33Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 42,
+      "title": "Validation: metcon-strength overlap check",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-04T08:56:36Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 43,
+      "title": "Validation: focus vs other volume concentration thresholds",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-04T08:56:41Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 74,
+      "title": "Mid-workout adaptation: not feeling it scaling",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:48Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 75,
+      "title": "Mid-workout adaptation: exercise substitution",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:49Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 76,
+      "title": "Pain report (log & message) and constraint discovery via review",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:50Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 77,
+      "title": "Basic post-workout review",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-27T22:50:34Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 78,
+      "title": "Post-workout review: profile enrichment prompts",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:52Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 79,
+      "title": "Post-workout review: AI summary",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:53Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 80,
+      "title": "In-app adherence check (24hr)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:54Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 81,
+      "title": "Block review and ActivateNextBlock",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:55Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 82,
+      "title": "Cycle review and new programme generation",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:56Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 83,
+      "title": "Athlete profile and goal management",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:57Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 84,
+      "title": "Location CRUD and training-day mapping",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-04-27T19:07:57Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 92,
+      "title": "feat(styling): listen for live prefers-color-scheme changes after first paint",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-01T09:58:05Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 102,
+      "title": "test(e2e): minimise email-sending paths and randomise test order",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-05T07:03:01Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 123,
+      "title": "Internal AI audit UI: per-turn dialogue inspector (#107 phase 4)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-10T18:07:05Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 125,
+      "title": "Admin actor + admin paths foundation",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-10T18:54:11Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 131,
+      "title": "Extend force_outcome_attempts knob to pre-assembly refusal kinds in generate-workouts",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-12T18:30:23Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 132,
+      "title": "Admin surface for oncall_replanning_events: ack/resolve transitions",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-12T18:30:29Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 133,
+      "title": "Restrict athlete-facing select on ai_interaction_logs.terminal_refusal_kind",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-12T18:30:34Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 134,
+      "title": "handle_ai_interaction_terminal: guard context_sent::jsonb cast against malformed input",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-12T18:30:38Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 135,
+      "title": "Investigate edge runtime function path for worktree-based Playwright runs",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-12T18:30:44Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 136,
+      "title": "Revisit model_abandoned retry classification: per-consecutive-count terminal escalation?",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-12T18:30:48Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 141,
+      "title": "CI: structural fix for Playwright cold-boot cascade flake",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-14T08:57:16Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 143,
+      "title": "Add explicit GRANTs to public-schema tables before Supabase Oct 30 2026 enforcement",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-14T17:45:37Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 146,
+      "title": "Eval rig: optional `auditWriter` hook for `ai_turn_logs` regression coverage (#107 phase 3a follow-up)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-14T20:41:39Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 150,
+      "title": "Add CI check to detect sync-rules.yaml ↔ schema drift",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-15T15:20:03Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 151,
+      "title": "Add PowerSync Cloud setup runbook to docs/",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-15T15:20:13Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 152,
+      "title": "Make Cloudflare Pages preview URL findable in PR",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-15T15:20:21Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 153,
+      "title": "Security: test_accounts migration deploys to production with known passwords",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-15T15:47:20Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 154,
+      "title": "DX: split vite.config.ts and vitest.config.ts to eliminate @vitest/expect Symbol clash",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-15T15:47:33Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 188,
+      "title": "Live-fire review of OL02 enforcement hooks & gates (scope-creep, no-commit, reversibility:hard)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-21T06:23:24Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 194,
+      "title": "OL03: verify /supervise-prs works against a live PR backlog (follow-up to #176)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-21T07:51:49Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 204,
+      "title": "OL03: Elaborator Mode A question-quality eval (gate for Phase B/C decision)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-21T17:03:00Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 209,
+      "title": "condition-backlog: classify unimplemented spec checks as predicate-backed vs guidance-only at milestone-audit time",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-22T08:08:26Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 211,
+      "title": "Elicit: fatigue model — what it is, where it lives, why",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-22T10:43:06Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 212,
+      "title": "Spec elicit: where does AthleteSkipsWorkout reason live?",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-22T15:55:52Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 213,
+      "title": "Spec gap: WorkoutLog.overall_feeling has no write path",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-22T15:56:05Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 214,
+      "title": "Layer in offline-first writes for WorkoutLog and SetLog",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-22T15:56:21Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 230,
+      "title": "Elaborator post-rollout design revisits (watch-list)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-24T07:40:15Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 247,
+      "title": "Skip-set affordance (deferred from #15)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:23Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 248,
+      "title": "Capture overall_feeling at workout review (deferred from #15)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:24Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 249,
+      "title": "Per-exercise total-volume summary (deferred from #15)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:26Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 250,
+      "title": "Offline-first SetLog writes via PowerSync (deferred from #15)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:28Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 251,
+      "title": "A11y: aria-label on set-log inputs + sr-only Logged announcement (deferred from #15)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:29Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 252,
+      "title": "Fix pre-existing parallel-fixture flake in workout-actions.test.ts",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:30Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 253,
+      "title": "Tighten logSet numeric input validation (Infinity, oversized integers) — deferred from #15",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-27T07:10:32Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 255,
+      "title": "Dashboard 60s placeholder fallback resets on hard reload — derive threshold from server-side timestamp",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-31T09:49:25Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 257,
+      "title": "Manual-workout escape hatch when AI cascade fails or is unavailable",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-05-31T11:41:22Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 259,
+      "title": "Automate cascade_dispatch_settings UPDATE in deploy workflow — manual post-deploy step has never been done",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-01T06:24:19Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 262,
+      "title": "Outer loop: milestone-journey smoke test required before milestone closure",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-02T00:26:18Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 278,
+      "title": "Audit unauthenticated route access (/presets reachable without creds)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-07T17:03:13Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 285,
+      "title": "Optional: /po-todo read-only FYI digest + OUTER_LOOP.md §5 mention",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-07T17:37:48Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 289,
+      "title": "Replace active cycle on preset adopt (Option B from #287)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-08T05:52:46Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 295,
+      "title": "Reconcile Dashboard exposes {scheduled, ready} projection with rendered next-workout UI",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-08T06:42:47Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 357,
+      "title": "Janitor LLM-track kinds have no automated detector — queue is operator-fed only",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-09T06:07:24Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 389,
+      "title": "test(cascade): edge-integration coverage for reconcile→ready round-trip (#272 V5 gap)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-09T06:49:20Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 393,
+      "title": "Verification hardening: journey-walk from app root, spec-clause checklist, green-is-green gate, UI mockups as conditioning input",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-11T07:22:37Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 397,
+      "title": "Adopt pnpm minimumReleaseAge as install-time supply-chain cooldown (needs pnpm >= 10.16)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-11T08:47:45Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 419,
+      "title": "Design-system affordance primitives for inline controls + immediate-save",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning+untracked-dependency",
+      "overdue": true,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-13T14:01:49Z",
+          "overdue": null
+        },
+        {
+          "reason": "untracked-dependency",
+          "unpark": [
+            "dependency-declared",
+            "operator-response",
+            "timeout"
+          ],
+          "since": "2026-06-13T14:55:01Z",
+          "overdue": "2026-07-05T10:54:16.289Z"
+        }
+      ]
+    },
+    {
+      "goal": 426,
+      "title": "Constraint resolution: AthleteConstraint needs a status/resolved lifecycle",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-13T16:06:47Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 433,
+      "title": "Frontend DRY tidy: extract capitaliseFirst + share WorkoutStatus type",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-13T17:48:19Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 446,
+      "title": "CI does not gate E2E — web regressions land green and only surface in the nightly",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T09:43:16Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 453,
+      "title": "Outer loop: converge to a single operator-facing entry point",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T18:56:59Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 454,
+      "title": "elaborator Mode C: consider promoting material [NEXT] disagreements from advisory to required",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T18:57:01Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 455,
+      "title": "elaborator Mode F: watch per-issue conditioning cost on large [NEXT] milestones",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T18:57:02Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 457,
+      "title": "Migrate remaining `agent-team` references to `/implement-feature` and retire the alias",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T19:08:11Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 458,
+      "title": "Automatic self-healing scheduler for stuck-placeholder cascade recovery",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T19:25:35Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 461,
+      "title": "Write the queued AIInteractionLog row at dispatch time (realize strengthened AuditPerInteraction)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-14T20:58:02Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 466,
+      "title": "Forward orchestration: move cascade dispatch to Cloudflare Workflows (Supabase + Cloudflare only, no new vendor)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-16T19:10:21Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 467,
+      "title": "[SECURITY] Close the SECURITY DEFINER anon-exposure footgun (default routine grants)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-16T20:59:03Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 471,
+      "title": "Retire the `Bodyweight` equipment type and migrate legacy bodyweight rows to equipment_required='{}'",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-16T21:48:14Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 472,
+      "title": "[P1] CI pgTAP gate is non-functional (`^not ok` never matches) — masking 2 real failures incl. a #468 security gap",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-16T21:48:16Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 479,
+      "title": "Principle: scope & size for milestones and issues in agentic dev",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-21T20:10:02Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 482,
+      "title": "Elaborator roadmap organisation (Job A): re-home ranking + coupling-detection as a standalone skill",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-21T21:38:06Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 489,
+      "title": "process-metrics",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-22T11:52:01Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 493,
+      "title": "Cross-loop bin dashboard: consolidated operator in-tray across all bins",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-22T19:09:31Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 496,
+      "title": "Eval rig: LLM-judge panel for holistic workout quality (complements deterministic scorers)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:53:10Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 497,
+      "title": "Eval rig: periodic operator calibration of quality instruments",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:53:11Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 499,
+      "title": "Spec: recover lost block-intent and first-workout dispatches (silent dashboard dead-end past the cycle-intent hop)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:58:53Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 500,
+      "title": "Spec: a skipped first workout never triggers generation of the next one (dead-end)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:58:54Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 502,
+      "title": "Spec hardening: no membership guard on intent-level movement patterns (only exercise_ids are guarded)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:58:57Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 503,
+      "title": "Spec hardening: deterministic validation doesn't reject a valid-but-degenerate (untrainable) workout",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:58:58Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 504,
+      "title": "Spec hardening: the hallucination guard's rejections aren't persisted for audit/diagnosis",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T00:58:59Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 505,
+      "title": "Process: RetrospectiveRemedy/RemedyKind taxonomy is awkward for judgment-mode hatches — enrich or demote",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-23T01:00:29Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 510,
+      "title": "Close the review → profile write-back loop (constraints, goals, familiarity)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-24T22:57:30Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 516,
+      "title": "Surface terminally-refused-workout backlog to the operator (recovery signal for #514/#266)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-25T08:52:01Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 517,
+      "title": "Deferred: verify #266 terminally-refused-workout recovery once prod is in AI mode (post-milestone-30)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-25T10:35:08Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 519,
+      "title": "Profile enrichment: anytime, breadth-focused, profile-aware question-based enhancement",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-25T10:45:25Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 520,
+      "title": "Review agent: nudge profile completion when initial question set incomplete or ability/prescription mismatched",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-25T10:45:45Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 525,
+      "title": "feat(elaborator): [CANDIDATE] tier — idle-time description enrichment of look-ahead milestones",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-25T14:05:49Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 541,
+      "title": "AI generation: cost-aware retry decision for cost_ceiling_exceeded (transient vs terminal + cache-token recalibration)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T08:39:41Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 542,
+      "title": "Develop /supervise-prs into a merge-decision agent: auto-merge gated on {architectural, irreversible, cost}",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T11:43:17Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 543,
+      "title": "Supervisor as post-merge surfacer: value-validation todos + architectural/product decision surfacing",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T11:43:38Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 544,
+      "title": "Supervisor owns cross-PR / migration-ordering coordination",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T11:43:40Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 545,
+      "title": "Skill: attribute a red nightly to the PRs merged since the last green nightly",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T11:43:42Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 550,
+      "title": "Mode G / §7a startability check re-strips conditioned issues by keying off stale issue-body gating prose",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T21:08:00Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 552,
+      "title": "eval-rig: re-seed scenario 02 to be lookup-faithful so tool_result_fidelity can gate",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T21:40:38Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 554,
+      "title": "OUTER_LOOP gap: scoping insights captured as feature-issue comments don't reach conditioning or the retro",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T23:36:55Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 555,
+      "title": "process(outer-loop): cached verdicts must be invalidated by their inputs — author principle + audit every stream",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T23:53:38Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 556,
+      "title": "feat(elaborator): Mode A → high-value gating question loop on [NEXT] + interactive /incorporate-answers (revives #165 B/C)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-26T23:54:23Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 559,
+      "title": "eval-rig has no typecheck step and ~266 pre-existing tsc errors",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-27T01:36:45Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 560,
+      "title": "ci.yml declares no explicit permissions: block (GITHUB_TOKEN hardening)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-27T01:36:46Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 561,
+      "title": "spec: terminal_refusal_kind referenced in prose but undeclared on AIInteractionLog",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-27T01:36:48Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 567,
+      "title": "Cloud-container portability of the outer loop: free execution but brokered GitHub authority",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-27T13:28:35Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 569,
+      "title": "Post-workout review: 2-hour delayed reminder notification delivery (deferred from #77)",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-27T20:33:40Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 574,
+      "title": "[ACTION REQUIRED] Conditioning ready for review — milestone \"J02: Daily Training\"",
+      "goalType": "delivery",
+      "focus": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-06-28T08:27:44Z",
+          "overdue": null
+        }
+      ]
+    }
+  ],
+  "waiting": [],
+  "done": 0,
+  "external": 136,
+  "wedges": [],
+  "gates": {
+    "met": [],
+    "wouldPark": [
+      {
+        "goal": 14,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":44,\"info\":108})"
+      },
+      {
+        "goal": 16,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":108,\"warning\":44})"
+      },
+      {
+        "goal": 18,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":122,\"warning\":54})"
+      },
+      {
+        "goal": 19,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":44,\"info\":98})"
+      },
+      {
+        "goal": 20,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":10,\"info\":6})"
+      },
+      {
+        "goal": 21,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":74,\"info\":8})"
+      },
+      {
+        "goal": 22,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":32,\"info\":48})"
+      },
+      {
+        "goal": 23,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":12,\"info\":18})"
+      },
+      {
+        "goal": 24,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 25,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":40,\"warning\":6})"
+      },
+      {
+        "goal": 26,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":118,\"info\":124})"
+      },
+      {
+        "goal": 40,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":80,\"info\":98})"
+      },
+      {
+        "goal": 41,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 42,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 43,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":64,\"info\":68})"
+      },
+      {
+        "goal": 74,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":108,\"warning\":44})"
+      },
+      {
+        "goal": 75,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":108,\"warning\":44})"
+      },
+      {
+        "goal": 76,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":134,\"warning\":118})"
+      },
+      {
+        "goal": 77,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":24,\"warning\":36})"
+      },
+      {
+        "goal": 78,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":24,\"warning\":10})"
+      },
+      {
+        "goal": 79,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":24,\"warning\":10})"
+      },
+      {
+        "goal": 80,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":24,\"warning\":10})"
+      },
+      {
+        "goal": 81,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":92,\"warning\":48})"
+      },
+      {
+        "goal": 82,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":92,\"warning\":48})"
+      },
+      {
+        "goal": 84,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":16,\"info\":96})"
+      },
+      {
+        "goal": 83,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":74,\"info\":68})"
+      },
+      {
+        "goal": 125,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":68,\"warning\":74})"
+      },
+      {
+        "goal": 132,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 133,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":46,\"warning\":2})"
+      },
+      {
+        "goal": 136,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 209,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 211,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":80,\"info\":132})"
+      },
+      {
+        "goal": 212,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 213,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":40,\"warning\":6})"
+      },
+      {
+        "goal": 214,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":40,\"warning\":6})"
+      },
+      {
+        "goal": 247,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":108,\"warning\":44})"
+      },
+      {
+        "goal": 248,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":64,\"warning\":16})"
+      },
+      {
+        "goal": 249,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":40,\"warning\":6})"
+      },
+      {
+        "goal": 250,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":40,\"warning\":6})"
+      },
+      {
+        "goal": 255,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 257,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":132,\"warning\":54})"
+      },
+      {
+        "goal": 278,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":24,\"warning\":10})"
+      },
+      {
+        "goal": 295,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 426,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":10,\"info\":66})"
+      },
+      {
+        "goal": 458,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 461,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":26})"
+      },
+      {
+        "goal": 471,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":6,\"info\":30})"
+      },
+      {
+        "goal": 499,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":38,\"info\":68})"
+      },
+      {
+        "goal": 500,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":64,\"info\":68})"
+      },
+      {
+        "goal": 502,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":64,\"info\":68})"
+      },
+      {
+        "goal": 503,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":128,\"info\":70})"
+      },
+      {
+        "goal": 504,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":28,\"info\":46})"
+      },
+      {
+        "goal": 510,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":120,\"warning\":26})"
+      },
+      {
+        "goal": 561,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"warning\":40,\"info\":114})"
+      },
+      {
+        "goal": 569,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail ({\"info\":42,\"warning\":22})"
+      }
+    ],
+    "enforced": []
+  }
+}
