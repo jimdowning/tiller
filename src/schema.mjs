@@ -59,7 +59,7 @@ export const BUCKETS = ['ripe', 'parked', 'waiting', 'done'];
 // Stable, sorted-key JSON so identical facts serialise identically
 // (content-dedup ⇒ idempotent ticks, invariant I3 no-hot-loop).
 export function canonicalKey(fact) {
-  const { seq, ...rest } = fact; // seq is store-assigned, not identity
+  const { seq: _seq, ...rest } = fact; // seq is store-assigned, not identity
   const sortedStringify = (v) => {
     if (Array.isArray(v)) return `[${v.map(sortedStringify).join(',')}]`;
     if (v && typeof v === 'object') {
