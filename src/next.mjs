@@ -21,14 +21,11 @@
 //              that took a goal and hit a missing tool mid-flight
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { FactStore } from './store.mjs';
 import { fold } from './classify.mjs';
-import { GATES } from '../engine.config.mjs';
+import { GATES, STATE_DIR } from './config.mjs';
 import { gateApplies, latestVerdict } from './gates.mjs';
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 // ---- capability probing (ask-time, this environment) -----------------------
 const has = (cmd) => {
@@ -118,16 +115,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ? new Set(args[capsIdx + 1].split(','))
     : probeCapabilities();
 
-  const path = resolve(ROOT, 'state/facts.jsonl');
+  const path = resolve(STATE_DIR, 'facts.jsonl');
   if (!existsSync(path)) { console.error('no state/facts.jsonl — run `node src/tick.mjs` first'); process.exit(2); }
   const store = new FactStore(path);
   const classification = fold(store.all());
   const meta = new Map();
-  const metaPath = resolve(ROOT, 'state/meta.json');
+  const metaPath = resolve(STATE_DIR, 'meta.json');
   if (existsSync(metaPath)) {
     for (const m of JSON.parse(readFileSync(metaPath, 'utf8'))) meta.set(m.number, m);
   }
-  const hystPath = resolve(ROOT, 'state/hysteresis.json');
+  const hystPath = resolve(STATE_DIR, 'hysteresis.json');
   const hyst = existsSync(hystPath) ? JSON.parse(readFileSync(hystPath, 'utf8')).goals : {};
 
   if (asOperator) {

@@ -1,10 +1,17 @@
 # Tiller — coordination engine (preliminary)
 
 The derived-plan/fact-log engine, built from the validated seeds of experiments
-E0–E6 (`../experiments/SYNTHESIS.md`, both gates passed): E2's fuzz-validated
+E0–E6 (SYNTHESIS.md, both gates passed): E2's fuzz-validated
 total classifier, E1's fold + templates, E4's thin verifier, E3's hysteresis
 knobs, E6's read-only sensing. Hand-rolled JS per the E5 fork verdict. Zero
 dependencies; tests run on `node --test`.
+
+**Origin.** This repo was extracted (history-preserving) from
+[jimdowning/strengthsys](https://github.com/jimdowning/strengthsys), where the
+engine grew up at `design/coordination-model/engine/`. The experiments E0–E6,
+their corpus, and `SYNTHESIS.md` are evidence about strengthsys's outer loop
+and stay there: see
+[design/coordination-model](https://github.com/jimdowning/strengthsys/tree/main/design/coordination-model).
 
 ```
 node src/tick.mjs                # one live reconciliation tick (read-only fetch)
@@ -13,6 +20,32 @@ node src/explain.mjs 419         # why isn't #419 ripe, and what exactly clears 
 node src/attest.mjs 10 journey-articulation pass   # operator verdict stamp
 node --test 'test/*.test.mjs'    # 50 tests
 ```
+
+## Configuration — `TILLER_CONFIG`
+
+By default the engine reads `engine.config.mjs` next to `src/` and keeps its
+state (`state/`) and snapshots (`snapshots/`) inside the engine directory —
+exactly the historical in-tree behaviour, so the commands above work from a
+bare checkout.
+
+To run the engine against a target repo (e.g. as a submodule), set
+`TILLER_CONFIG` to the path of a config `.mjs` in that repo:
+
+```
+TILLER_CONFIG=./tiller.config.mjs node tiller/src/tick.mjs
+```
+
+The config module exports what `engine.config.mjs` exports (`GATES`,
+`SENSORS`) plus optional path settings, each resolved **relative to the
+config file's directory** (so a config at the target repo's root is robust to
+the caller's cwd):
+
+- `stateDir` — fact log, hysteresis memory, meta cache (machine-local;
+  gitignore it)
+- `snapshotDir` — derived-plan snapshots `<date>.{json,md}` (date-named →
+  conflict-free; commit them)
+- `repoRoot` — the sensed repo's root, used by mechanical sensors such as
+  spec-check (default: the config file's directory)
 
 ## Issues-only state model
 
@@ -59,7 +92,9 @@ hysteresis.mjs           — E3's I4 gate (W=3 K=3 M=1.0 cw=2): raw-ripe goals
 tick.mjs                 — orchestration + snapshots/<date>.{json,md}
 ```
 
-Facts and buckets follow `../experiments/e2-liveness/goal-liveness.allium`.
+Facts and buckets follow
+[`experiments/e2-liveness/goal-liveness.allium`](https://github.com/jimdowning/strengthsys/blob/main/design/coordination-model/experiments/e2-liveness/goal-liveness.allium)
+(in strengthsys).
 
 ## Situational gates (shadow-first)
 
@@ -139,6 +174,7 @@ overdue.
   invalidated (spec ramifications, product escalations, child drift), and
   the waste-in-the-large metrics (stale-dispatch exposure in human minutes /
   LLM tokens / compute minutes) are not yet derivable. Agreed design:
-  `../decomposition-freshness.md` — a `decomposition-verdict` fact
+  [`decomposition-freshness.md`](https://github.com/jimdowning/strengthsys/blob/main/design/coordination-model/decomposition-freshness.md)
+  (in strengthsys) — a `decomposition-verdict` fact
   (input-hash keyed, superseding) with a `needs-decomposition` park, the
   gate pattern applied one level up.

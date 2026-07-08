@@ -8,11 +8,10 @@
 // give (authority: 'operator'). The challenge/refinement conversation happens
 // wherever it happens (an interactive session); only its conclusion lands
 // here, as a fact.
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { FactStore } from './store.mjs';
+import { STATE_DIR } from './config.mjs';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [goalArg, artifact, verdict] = process.argv.slice(2);
 const goal = Number(goalArg);
 const noteIdx = process.argv.indexOf('--note');
@@ -24,7 +23,7 @@ if (!goal || !artifact || !['pass', 'fail'].includes(verdict)) {
 }
 
 const nowTs = new Date().toISOString();
-const store = new FactStore(resolve(ROOT, 'state/facts.jsonl'));
+const store = new FactStore(resolve(STATE_DIR, 'facts.jsonl'));
 const fact = {
   ts: nowTs, kind: 'validity-verdict', goal, artifact, verdict,
   source: 'operator', ...(note ? { note } : {}),

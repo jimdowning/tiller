@@ -10,8 +10,7 @@
 // fact log is the STATE (state/facts.jsonl), and the hysteresis gate memory
 // (state/hysteresis.json) is the only other persistence.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { FactStore } from './store.mjs';
 import { fold, unparkIsLive } from './classify.mjs';
 import { translate, descopeContradictions } from './sense/translate.mjs';
@@ -20,11 +19,7 @@ import { stepGate, newGoalState, KNOBS } from './hysteresis.mjs';
 import { TIMEOUT_TTL_DAYS } from './templates.mjs';
 import { evaluateGates } from './gates.mjs';
 import { specCheckFacts } from './sense/checks.mjs';
-import { GATES, SENSORS } from '../engine.config.mjs';
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const STATE_DIR = resolve(ROOT, 'state');
-const SNAP_DIR = resolve(ROOT, 'snapshots');
+import { GATES, SENSORS, STATE_DIR, SNAP_DIR, REPO_ROOT } from './config.mjs';
 
 const args = process.argv.slice(2);
 const OFFLINE = args.includes('--offline');
@@ -212,6 +207,7 @@ export async function runTick({ offline = OFFLINE, noHysteresis = NO_HYST } = {}
     const novel = store.appendAll(t.facts);
     const descoped = store.appendAll(descopeContradictions(store.all(), meta, nowTs));
     console.error(`[tick] ${novel.length} novel facts, ${descoped.length} descope contradictions`);
+    mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(resolve(STATE_DIR, 'meta.json'),
       JSON.stringify([...meta.values()], null, 2));
   } else if (existsSync(resolve(STATE_DIR, 'meta.json'))) {
@@ -233,7 +229,7 @@ export async function runTick({ offline = OFFLINE, noHysteresis = NO_HYST } = {}
     const sFacts = store.appendAll(specCheckFacts({
       gate: specGate, sensor: SENSORS[specGate.requires.artifact],
       classification, meta, existingKeys: store.keys,
-      repoRoot: resolve(ROOT, '../../..'), nowTs,
+      repoRoot: REPO_ROOT, nowTs,
     }));
     if (sFacts.length) console.error(`[tick] ${sFacts.length} sensor verdict(s)`);
   }

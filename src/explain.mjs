@@ -9,12 +9,10 @@
 // a gate whose exit can't be stated crisply enough to print here is a gate
 // that shouldn't exist yet.
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { FactStore } from './store.mjs';
 import { fold } from './classify.mjs';
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+import { STATE_DIR } from './config.mjs';
 
 // Humanize unpark disjuncts — what a person would actually do.
 const HUMANIZE = {
@@ -82,11 +80,11 @@ export function explain(goal, classification, facts, hystGoals = {}) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const num = Number(process.argv[2]);
   if (!num) { console.error('usage: node src/explain.mjs <issue-number> [--json]'); process.exit(2); }
-  const path = resolve(ROOT, 'state/facts.jsonl');
+  const path = resolve(STATE_DIR, 'facts.jsonl');
   if (!existsSync(path)) { console.error('no state/facts.jsonl — run `node src/tick.mjs` first'); process.exit(2); }
   const store = new FactStore(path);
   const classification = fold(store.all());
-  const hystPath = resolve(ROOT, 'state/hysteresis.json');
+  const hystPath = resolve(STATE_DIR, 'hysteresis.json');
   const hyst = existsSync(hystPath) ? JSON.parse(readFileSync(hystPath, 'utf8')).goals : {};
   const result = explain(num, classification, store.all(), hyst);
   console.log(process.argv.includes('--json')
