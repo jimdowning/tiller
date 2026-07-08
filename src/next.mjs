@@ -84,10 +84,36 @@ export function operatorActions(classification, meta, facts) {
   return out;
 }
 
+// ---- focus:current journey-child priority ----------------------------------
+// Goals declared children of a live `goal:journey` issue labelled
+// `focus:current` (via its body task-list / a `Part of #N` line — the declared
+// decomposition edges) outrank everything else. This mirrors the old picker's
+// [CURRENT]-milestone gate: dispatch-parity datapoint 1 (strengthsys#597)
+// caught number-order selection picking a focus:next journey's child ahead of
+// the focus:current journey's. Direct children only — journeys are one level
+// deep in practice.
+export function focusCurrentChildren(classification, meta) {
+  const journeys = new Set();
+  for (const [n, m] of meta) {
+    const goalType = classification.get(n)?.goalType ?? m.goalType;
+    if (goalType !== 'journey' || m.focus !== 'current') continue;
+    if (classification.get(n)?.bucket === 'done') continue; // dead journey confers nothing
+    journeys.add(n);
+  }
+  const children = new Set();
+  for (const [, m] of meta) {
+    for (const d of m.bodyDeclared ?? []) {
+      if (journeys.has(d.goal)) children.add(d.dependsOn);
+    }
+  }
+  return children;
+}
+
 export function match(classification, meta, caps, hystGoals = {}) {
   const matched = [];
   const skipped = [];
   const focusRank = { current: 0, next: 1 };
+  const currentChildren = focusCurrentChildren(classification, meta);
   for (const [goal, c] of classification) {
     if (c.bucket !== 'ripe' || c.goalType === 'external') continue;
     const m = meta.get(goal);
@@ -99,7 +125,8 @@ export function match(classification, meta, caps, hystGoals = {}) {
     const req = requirementsOf(c, m);
     const missing = [...req].filter((r) => !caps.has(r));
     const row = { goal, title: c.title, focus: m?.focus ?? null,
-      requires: [...req], priority: focusRank[m?.focus] ?? 2 };
+      requires: [...req],
+      priority: currentChildren.has(goal) ? 0 : focusRank[m?.focus] ?? 2 };
     if (missing.length) skipped.push({ ...row, why: `missing capability: ${missing.join(', ')}` });
     else matched.push(row);
   }
