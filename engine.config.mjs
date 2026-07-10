@@ -1,5 +1,10 @@
 // engine.config.mjs — per-repo gate + sensor configuration.
 //
+// This is the TILLER_CONFIG-less fallback: the historical in-tree defaults
+// the engine grew up with in strengthsys (documented in the README). The
+// SELF-HOSTED instance — the engine sensing this repo's own issues — is
+// `tiller.config.mjs` at the repo root; see README "Self-hosting".
+//
 // GATES are SITUATIONAL: `appliesWhen` is a data predicate over what the
 // engine knows about a goal (type, labels, body-cited paths) — a gate binds
 // only in the situations that make its prework necessary, never universally
