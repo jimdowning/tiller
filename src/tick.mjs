@@ -5,6 +5,8 @@
 //   node src/tick.mjs                  live tick (read-only GitHub fetch)
 //   node src/tick.mjs --offline       re-derive from the stored fact log only
 //   node src/tick.mjs --no-hysteresis report raw ripeness (skip the I4 gate)
+//   node src/tick.mjs --accept-shrink accept an implausibly shrunken open set
+//                                     (only when a mass-close is genuinely real)
 //
 // GitHub is never written. The derived plan is the OUTPUT (snapshots/), the
 // fact log is the STATE (state/facts.jsonl), and the hysteresis gate memory
@@ -20,10 +22,32 @@ import { TIMEOUT_TTL_DAYS } from './templates.mjs';
 import { evaluateGates } from './gates.mjs';
 import { specCheckFacts } from './sense/checks.mjs';
 import { GATES, SENSORS, STATE_DIR, SNAP_DIR, REPO_ROOT } from './config.mjs';
+import { DegradedSenseError } from './sense/github.mjs';
 
 const args = process.argv.slice(2);
 const OFFLINE = args.includes('--offline');
 const NO_HYST = args.includes('--no-hysteresis');
+const ACCEPT_SHRINK = args.includes('--accept-shrink');
+
+/**
+ * Plausibility check on a fresh sense against the previous one (#4).
+ *
+ * GitHub search can return a degraded result set without the
+ * `incomplete_results` flag; an implausibly shrunken open set silently
+ * clobbering `state/meta.json` is exactly the class of failure the
+ * append-only fact log exists to prevent, one layer up. The check only
+ * activates once the previous sense is big enough (`minPrev`) for shrinkage
+ * to be meaningful, and tolerates legitimate closure churn down to
+ * `maxShrink` of the previous count.
+ */
+export function checkSensePlausibility(prevCount, newCount, { minPrev = 5, maxShrink = 0.5 } = {}) {
+  if (prevCount == null || prevCount < minPrev) return { ok: true };
+  if (newCount >= prevCount * maxShrink) return { ok: true };
+  return {
+    ok: false,
+    message: `sensed open set shrank implausibly (${prevCount} -> ${newCount} open items)`,
+  };
+}
 
 /** Manufacture timeout facts for parks past their TTL (I3: absence → fact). */
 export function manufactureTimeouts(classification, nowTs, ttlDays = TIMEOUT_TTL_DAYS) {
@@ -187,21 +211,50 @@ export function renderMarkdown(snap) {
 }
 
 // ---------------------------------------------------------------------------
-export async function runTick({ offline = OFFLINE, noHysteresis = NO_HYST } = {}) {
+export async function runTick({
+  offline = OFFLINE, noHysteresis = NO_HYST, acceptShrink = ACCEPT_SHRINK,
+  sense = null, // injectable sensor for tests: { repo, fetch(), resolveRefs(referenced, known) }
+} = {}) {
   const nowTs = new Date().toISOString();
   const store = new FactStore(resolve(STATE_DIR, 'facts.jsonl'));
   let meta = new Map();
 
   if (!offline) {
-    const { detectRepo, fetchOpenSet, resolveExternalRefs } = await import('./sense/github.mjs');
-    const repo = detectRepo();
-    console.error(`[tick] sensing ${repo}...`);
-    const items = fetchOpenSet(repo);
+    let sensor = sense;
+    if (!sensor) {
+      const gh = await import('./sense/github.mjs');
+      const repo = gh.detectRepo();
+      sensor = {
+        repo,
+        fetch: () => gh.fetchOpenSet(repo),
+        resolveRefs: (referenced, known) => gh.resolveExternalRefs(repo, referenced, known),
+      };
+    }
+    console.error(`[tick] sensing ${sensor.repo}...`);
+    const items = sensor.fetch();
     console.error(`[tick] fetched ${items.length} open items`);
+
+    // #4 guard: a degraded/implausibly shrunken sense must fail loudly BEFORE
+    // any fact append, descope contradiction, or meta write. The fact log
+    // would survive a bogus small sense by design; meta would not.
+    const metaPath = resolve(STATE_DIR, 'meta.json');
+    const prevCount = existsSync(metaPath)
+      ? JSON.parse(readFileSync(metaPath, 'utf8')).length
+      : null;
+    const plausible = checkSensePlausibility(prevCount, items.length);
+    if (!plausible.ok) {
+      if (!acceptShrink) {
+        throw new DegradedSenseError(
+          `${plausible.message} — refusing to overwrite ${metaPath}. ` +
+          'If the shrink is real (mass close), re-run with --accept-shrink.');
+      }
+      console.error(`[tick] WARNING: ${plausible.message} — accepted via --accept-shrink`);
+    }
+
     // first pass to learn referenced numbers, then resolve the external ones
     const first = translate(items, new Map(), nowTs);
     const known = new Set(items.map((i) => i.number));
-    const externals = resolveExternalRefs(repo, first.referenced, known);
+    const externals = sensor.resolveRefs(first.referenced, known);
     const t = translate(items, externals, nowTs);
     meta = t.meta;
     const novel = store.appendAll(t.facts);

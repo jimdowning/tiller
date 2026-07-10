@@ -20,23 +20,54 @@ export function detectRepo() {
   return info.nameWithOwner;
 }
 
-function listOpenItems(repo) {
+/** A sense that must not be trusted as the full open set (#4). */
+export class DegradedSenseError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'DegradedSenseError';
+  }
+}
+
+/**
+ * Collect every page of a GitHub search, refusing degraded results (#4).
+ *
+ * `fetchPage(page)` returns the raw search payload
+ * `{ total_count, incomplete_results, items }`. GitHub signals a degraded
+ * (timed-out, partial) search with `incomplete_results: true` and NO error —
+ * treating that as the open set would silently shrink downstream state, so
+ * it throws instead. A collected count short of `total_count` (e.g. the
+ * pagination safety bound truncating) throws for the same reason.
+ */
+export function collectSearchPages(fetchPage, { maxPages = 12 } = {}) {
   const all = [];
-  let page = 1;
-  for (;;) {
-    const res = gh([
-      'api', '-X', 'GET', 'search/issues',
-      '-f', `q=repo:${repo} is:open`,
-      '-f', 'per_page=100', '-f', `page=${page}`,
-      '--jq', '.items',
-    ]);
-    if (!res.length) break;
-    all.push(...res);
-    if (res.length < 100) break;
-    page++;
-    if (page > 12) break; // safety bound
+  let total = null;
+  for (let page = 1; page <= maxPages; page++) {
+    const res = fetchPage(page) ?? {};
+    if (res.incomplete_results) {
+      throw new DegradedSenseError(
+        `GitHub search returned incomplete_results=true on page ${page} ` +
+        `(${all.length + (res.items?.length ?? 0)} items so far) — ` +
+        'refusing to treat a partial result set as the open set');
+    }
+    if (typeof res.total_count === 'number') total = res.total_count;
+    const items = res.items ?? [];
+    all.push(...items);
+    if (items.length < 100) break;
+  }
+  if (total != null && all.length < total) {
+    throw new DegradedSenseError(
+      `GitHub search yielded ${all.length} of ${total} matching items — ` +
+      'refusing to treat a truncated result set as the open set');
   }
   return all;
+}
+
+function listOpenItems(repo) {
+  return collectSearchPages((page) => gh([
+    'api', '-X', 'GET', 'search/issues',
+    '-f', `q=repo:${repo} is:open`,
+    '-f', 'per_page=100', '-f', `page=${page}`,
+  ]));
 }
 
 /**

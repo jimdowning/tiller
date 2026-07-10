@@ -18,7 +18,7 @@ node src/tick.mjs                # one live reconciliation tick (read-only fetch
 node src/tick.mjs --offline      # re-derive from the stored fact log only
 node src/explain.mjs 419         # why isn't #419 ripe, and what exactly clears it
 node src/attest.mjs 10 journey-articulation pass   # operator verdict stamp
-node --test 'test/*.test.mjs'    # 50 tests
+node --test 'test/*.test.mjs'    # 74 tests
 ```
 
 ## Configuration — `TILLER_CONFIG`
@@ -34,6 +34,14 @@ To run the engine against a target repo (e.g. as a submodule), set
 ```
 TILLER_CONFIG=./tiller.config.mjs node tiller/src/tick.mjs
 ```
+
+A **relative** `TILLER_CONFIG` resolves against the *invoking* cwd — the
+first of `INIT_CWD` (npm/pnpm scripts), `PWD` (the shell's cwd, inherited
+unchanged through spawn), then the process cwd where the file actually
+exists — never silently against the engine directory, so callers that spawn
+the engine with `cwd` set to the engine dir still get the config they named
+(#5). If the file exists under none of those bases, config loading fails
+loudly listing what was tried; pass an absolute path to be fully explicit.
 
 The config module exports what `engine.config.mjs` exports (`GATES`,
 `SENSORS`) plus optional path settings, each resolved **relative to the
@@ -122,6 +130,15 @@ no-new-warnings ratchet) is an open operator calibration.
 
 ## Semantics worth knowing
 
+- **Degraded senses fail loudly, never clobber.** GitHub search can return a
+  partial result set with `incomplete_results: true` and no error; sensing
+  treats that (and a pagination-truncated set, and an implausibly shrunken
+  open set vs the previous `state/meta.json` — default: shrink below 50% of
+  a previous count ≥ 5) as a `DegradedSenseError` that aborts the tick
+  *before* any fact append, descope contradiction, or meta write (#4). The
+  append-only fact log would survive a bogus small sense by design; `meta`
+  would not. A genuine mass-close is accepted explicitly with
+  `--accept-shrink`.
 - **Multi-park.** A goal holds a *set* of parks keyed by reason
   (unconditioned AND operator-parked coexist). It ripens only when every park
   clears. First live tick against this repo caught the single-slot loss.
