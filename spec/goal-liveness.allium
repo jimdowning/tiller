@@ -1,0 +1,278 @@
+-- allium: 3
+-- goal-liveness.allium
+--
+-- EXPERIMENT ARTIFACT (E2 — liveness by construction). NOT part of the
+-- authoritative spec/ tree. This is the classifier CONTRACT that the
+-- deterministic fold in classifier.mjs implements and fuzz.mjs
+-- property-tests. See design/coordination-model/experiments/e2-liveness/.
+--
+-- Scope: The goal-state partition as a TOTAL function over an append-only
+-- fact log. Covers:
+--
+--   - The fact vocabulary (producible fact kinds + non-producible absence
+--     sentinels), keyed to invariant I3 ("act only on change": absence is
+--     not a fact).
+--   - The four-bucket partition (ripe | parked | waiting | done) as a Goal
+--     field, with totality expressed as "every formed goal carries exactly
+--     one bucket".
+--   - The unpark predicate carried by every parked goal, and the
+--     UnparkLiveness invariant: at least one referenced fact kind must be
+--     producible, so the park can in principle fire.
+--   - The manufacture rule that repairs an absence-only unpark predicate by
+--     appending a producible `timeout` disjunct (the E0-07 / E0-08 fix).
+--   - Monotone-done: a done goal stays done unless an explicit contradiction
+--     fact flips it, in which case it RE-ENTERS a live bucket (never vanishes).
+--   - Dependency-cycle parking: a goal inside a dependency cycle is parked
+--     (unpark = contradiction | operator-response), never left waiting forever.
+--
+-- Excludes:
+--   - The scheduler (capability match, priority, leases, WIP, back-pressure).
+--     This spec is the RECONCILER's liveness contract only — "what bucket",
+--     not "what runs, where, now".
+--   - Fuzzy method bodies. Per invariant I5, methods produce facts; only the
+--     fold reads facts to classify. No method-body behaviour is modelled here.
+--   - Fact provenance / the orphan-branch substrate (design §6). The classifier
+--     is pure over whatever facts it is fed; where they come from is elsewhere.
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum Bucket {
+    -- The total partition. Every FORMED goal maps to exactly one.
+    ripe |     -- deps satisfied, not parked, not done: actionable now
+    parked |   -- blocked; carries an unpark predicate over future facts
+    waiting |  -- an active dependency on a not-done goal (acyclic => live)
+    done       -- the goal predicate holds (a fact), until contradicted
+}
+
+enum ProducibleFactKind {
+    -- Fact kinds some declared method, heartbeat emitter, or the scheduler's
+    -- timeout clock can APPEND in the future. An unpark predicate is "live"
+    -- iff it references at least one of these. Mirrors PRODUCIBLE_FACT_KINDS
+    -- in classifier.mjs.
+    goal_formed |
+    dependency_declared |
+    artifact_produced |
+    validity_verdict |
+    capability_asserted |
+    capability_revoked |
+    goal_done |
+    attempt |
+    park |
+    unpark |
+    budget_exhausted |
+    heartbeat |
+    operator_response |
+    timeout |
+    contradiction
+}
+
+enum AbsenceSentinel {
+    -- Pseudo-kinds that encode NO-CHANGE / absence. Nothing appends these,
+    -- so an unpark predicate resting solely on them can never fire — the
+    -- structural wedge invariant I3 forbids. The classifier REPAIRS such a
+    -- predicate (see ManufactureTimeoutForDeadUnpark). "operator still
+    -- absent" is the canonical member.
+    operator_absence |
+    operator_still_absent |
+    loop_still_dead |
+    still_waiting |
+    no_change
+}
+
+enum ParkReason {
+    blocked |
+    stall |             -- I3 second guard: N no-progress attempts
+    budget |
+    dependency_cycle |
+    awaiting_next_tick | -- E0-07 loop heartbeat park
+    route_ambiguity      -- E0-08 non-interactive lane park
+}
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    stall_threshold: Integer = 3
+    -- I3: consecutive `attempt` facts with no intervening progress fact
+    -- (artifact_produced / goal_done) before a goal is parked on reason=stall.
+
+    manufactured_disjunct: ProducibleFactKind = timeout
+    -- The producible fact kind appended to repair an absence-only unpark
+    -- predicate. A scheduler clock emits `timeout` when a deadline passes,
+    -- converting "the block persists" into an appendable fact.
+}
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity Fact {
+    -- An immutable, timestamped assertion. The log is append-only; state is a
+    -- fold over Facts. `ts` may arrive out of order; `seq` is the append
+    -- counter and the deterministic tie-breaker for the fold order.
+    kind: ProducibleFactKind
+    ts: Integer
+    seq: Integer
+    -- payload fields (goal, dependsOn, capability, artifact, inputHash,
+    -- contradicts, ...) are kind-specific and read by the fold; modelled as
+    -- opaque here since Allium's concern is the partition contract.
+}
+
+entity UnparkPredicate {
+    -- Attached to every parked Goal. `references` names the fact kinds whose
+    -- appearance would unpark the goal. `manufactured` records any disjunct
+    -- the classifier had to add to guarantee liveness (empty when the declared
+    -- predicate was already live). At least one referenced kind is producible
+    -- (UnparkLiveness).
+    references_producible: Boolean
+    -- true iff at least one referenced disjunct is a ProducibleFactKind. The
+    -- classifier maintains this by construction; the invariant pins it.
+    manufactured_timeout: Boolean
+    -- true iff the classifier appended `timeout` to repair an absence-only
+    -- declared predicate (E0-07, E0-08).
+}
+
+entity Goal {
+    -- A folded goal: the classifier's output row. `formed` is set by a
+    -- goal_formed fact; `bucket` is the derived partition assignment; `done`
+    -- tracks the (contradictable) done predicate; `unpark` is present iff
+    -- bucket = parked.
+    id: String
+    formed: Boolean
+    done: Boolean
+    bucket: Bucket
+    park_reason: ParkReason
+    unpark: UnparkPredicate
+    stall_count: Integer
+    -- Every formed goal has exactly one bucket by virtue of `bucket` being a
+    -- single required enum field: totality is structural, and the fold is
+    -- total because its bucket assignment is an exhaustive if/elif/else
+    -- (done -> parked -> cycle-parked -> waiting -> ripe).
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule ManufactureTimeoutForDeadUnpark {
+    -- Liveness by construction. When a goal parks with an unpark predicate
+    -- that references NO producible kind (absence-only / malformed), the
+    -- classifier appends a producible `timeout` disjunct so the park can in
+    -- principle fire. This is the concrete repair behind E0-07 (dead /loop ->
+    -- park on a heartbeat/timeout) and E0-08 (non-interactive lane -> timeout
+    -- back to the deterministic route).
+    when: g: Goal.bucket becomes parked
+    requires: g.unpark.references_producible = false
+
+    ensures:
+        g.unpark.references_producible = true
+        g.unpark.manufactured_timeout = true
+
+    @guidance
+        -- The manufactured kind is config.manufactured_disjunct (timeout).
+        -- After this rule, UnparkLiveness holds for g. The generator in
+        -- fuzz.mjs injects absence-only predicates; disabling this repair
+        -- (defect noNormalizeUnpark) makes property (b) fail immediately.
+}
+
+rule ContradictionReentersBucket {
+    -- I1 + monotone-done. A contradiction of a goal's goal_done fact flips the
+    -- derived `done` predicate WITHOUT deleting anything. The goal must
+    -- RE-ENTER a live bucket (waiting/ripe/parked), never disappear from the
+    -- partition. Deleting the goal instead (defect contradictionDeletesGoal)
+    -- makes property (a) totality fail.
+    when: g: Goal.done becomes false
+    requires: g.formed = true
+
+    ensures:
+        g.bucket != done
+
+    @guidance
+        -- The new bucket is whatever the fold computes from the surviving
+        -- facts (an unsatisfied dep => waiting; a cycle => parked; else ripe).
+        -- The point pinned here is only that the goal remains classified.
+}
+
+rule ParkGoalInDependencyCycle {
+    -- A goal inside a dependency cycle among not-done goals cannot clear from
+    -- any producible fact WITHIN the cycle, so waiting-forever would be a
+    -- wedge. It is parked on contradiction | operator-response (both
+    -- producible): a human drops an edge / reformulates, or answers. E0-09's
+    -- structural answer generalised.
+    when: g: Goal.bucket becomes waiting
+    requires: g.formed = true
+
+    ensures:
+        -- if g participates in a dependency cycle, it is parked, not waiting
+        g.bucket = parked
+        g.park_reason = dependency_cycle
+        g.unpark.references_producible = true
+
+    @guidance
+        -- "Participates in a cycle" is computed by the fold's iterative DFS,
+        -- which marks only the true cycle SUFFIX (a goal that merely feeds a
+        -- cycle stays `waiting`, correctly). Disabling cycle detection (defect
+        -- noCycleDetection) leaves cyclic goals waiting and fails property (e).
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant Totality {
+    -- Every FORMED goal is classified into exactly one bucket. `bucket` is a
+    -- single required enum, so "exactly one" is structural; this invariant
+    -- pins the "every formed goal is present" half (no goal may be dropped —
+    -- the monotone-done vanish bug).
+    for g in Goals where formed = true:
+        g.bucket in {ripe, parked, waiting, done}
+}
+
+invariant UnparkLiveness {
+    -- THE liveness property. Every parked goal carries an unpark predicate
+    -- that references at least one producible fact kind — so it can in
+    -- principle fire (no goal is parked on a condition no future fact could
+    -- satisfy). Guaranteed by construction via ManufactureTimeoutForDeadUnpark.
+    for g in Goals where bucket = parked:
+        g.unpark.references_producible = true
+}
+
+invariant MonotoneDone {
+    -- A goal in the done bucket has its done predicate holding. The temporal
+    -- half — done stays done until an explicit contradiction — is enforced by
+    -- ContradictionReentersBucket (the only path out of done is a
+    -- contradiction fact). Property (c) in fuzz.mjs checks both.
+    for g in Goals where bucket = done:
+        g.done = true
+}
+
+invariant DoneImpliesNotParked {
+    -- The buckets are mutually exclusive (structural, but pinned): a done goal
+    -- is not simultaneously parked/waiting/ripe. The fold checks `done` first.
+    for g in Goals where done = true and formed = true:
+        g.bucket = done
+}
+
+invariant NoStallHotLoop {
+    -- I3 / property (d). A goal only re-enters an actionable bucket when a
+    -- BEARING fact changes. The stall counter parks a goal after
+    -- config.stall_threshold no-progress attempts; content-identical facts are
+    -- deduped before the fold, so replaying the same tail cannot advance the
+    -- counter (idempotence). A parked-on-stall goal stays parked until a
+    -- producible progress/answer fact arrives.
+    for g in Goals where park_reason = stall:
+        g.bucket = parked and g.unpark.references_producible = true
+}
+
+------------------------------------------------------------
+-- Open Questions
+------------------------------------------------------------
+
+open question "Waiting-liveness is only checked structurally (acyclicity): a goal waiting on a not-done, non-cyclic dependency is assumed live because goal_done is producible. A dependency on a goal that is never formed and never completed is technically a slow wedge the classifier does not flag (it stays `waiting`). The fuzzer's property (e) catches cycles but not dangling never-formed dependencies. Decide whether to add a `waiting-reachability` predicate (the dependency goal is either formed-and-active or has a producible formation path) or accept dangling deps as an operator-visible parked-frontier concern."
+
+open question "Monotone-done re-entry does not distinguish WHICH non-done bucket a contradicted goal returns to when the contradiction also invalidates intermediate artifacts. The classifier recomputes from surviving facts, which is correct, but the *informed-rework* seed (I2 — the contradiction fact that killed it feeds reformulation) is not modelled here; it lives in the goal-revision (beta) layer upstream, out of this liveness contract's scope."
+
+open question "The manufactured `timeout` disjunct guarantees a parked goal CAN fire, but not that a scheduler actually emits the timeout on any particular deadline. Liveness-in-principle (a producible kind is referenced) is what this spec pins; liveness-in-practice (the clock is wired and the deadline is sane) is a scheduler obligation. The E0-07 lesson is that the current system lacks even the in-principle guarantee — this closes that gap; the scheduler wiring is the follow-on."
