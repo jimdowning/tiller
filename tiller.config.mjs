@@ -47,13 +47,18 @@ export const DELIVERY_TEMPLATE = {
 //   (1) a passing fuzz-run verdict (mechanical — the E2-port property fuzzer)
 //   (2) a goal-liveness spec update, attested by the operator
 // ---------------------------------------------------------------------------
+// appliesWhen matches EXPLICIT path citations only. First dogfood tick
+// datapoint (2026-07-10): a broader `\bclassifier\b|\bfold\b` prose match
+// applied the gates to all six open issues — every seeded issue mentions the
+// classifier in passing. Citing src/classify.mjs / src/schema.mjs is the
+// declared signal that a goal touches the fold.
 export const GATES = [
   {
     id: 'classifier-fuzz',
     description: 'classifier/fold changes carry a passing fuzz-run verdict (test/fuzz.mjs)',
     mode: 'shadow',
     authority: 'sensor',
-    appliesWhen: { goalType: 'delivery', bodyCites: 'src/(classify|schema)\\.mjs|\\bclassifier\\b|\\bfold\\b' },
+    appliesWhen: { goalType: 'delivery', bodyCites: 'src/(classify|schema)\\.mjs' },
     requires: { artifact: 'fuzz-run' },
   },
   {
@@ -61,7 +66,7 @@ export const GATES = [
     description: 'classifier/fold changes update spec/goal-liveness.allium — operator-attested (attest.mjs)',
     mode: 'shadow',
     authority: 'operator',
-    appliesWhen: { goalType: 'delivery', bodyCites: 'src/(classify|schema)\\.mjs|\\bclassifier\\b|\\bfold\\b' },
+    appliesWhen: { goalType: 'delivery', bodyCites: 'src/(classify|schema)\\.mjs' },
     requires: { artifact: 'spec-sync', source: 'operator' },
   },
 ];
