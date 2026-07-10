@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { gateApplies } from '../gates.mjs';
 
 const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 12);
 
@@ -74,6 +75,50 @@ export function specCheckFacts({ gate, sensor, classification, meta, existingKey
     out.push({ ts: nowTs, kind: 'validity-verdict', goal, artifact: gate.requires.artifact,
       verdict: failing === 0 ? 'pass' : 'fail', source: 'sensor',
       inputHash, counts: total, files: cited, key });
+  }
+  return out;
+}
+
+/**
+ * Generic command sensor: pass/fail by exit code.
+ *
+ * Sensor shape: { kind: 'command', command: ['node', 'test/fuzz.mjs', '5000'],
+ * inputs: ['src/classify.mjs', ...] }. The verdict is keyed by the input hash
+ * of the sensor's DECLARED input files (the files whose change should force a
+ * re-run), so an unchanged input never re-runs; the command executes at most
+ * once per tick and its verdict is fanned out to every goal the gate applies
+ * to at that hash.
+ */
+export function commandCheckFacts({ gate, sensor, classification, meta, existingKeys, repoRoot, nowTs }) {
+  const out = [];
+  const inputs = (sensor.inputs ?? []).filter((p) => existsSync(resolve(repoRoot, p)));
+  if (!inputs.length) return out;
+  const inputHash = sha(inputs.map((p) => readFileSync(resolve(repoRoot, p), 'utf8')).join('\0'));
+
+  let run = null; // lazy: only execute if some applicable goal lacks a verdict
+  const runOnce = () => {
+    if (run) return run;
+    try {
+      execFileSync(sensor.command[0], sensor.command.slice(1),
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: 'pipe' });
+      run = { verdict: 'pass' };
+    } catch (e) {
+      run = e.status != null
+        ? { verdict: 'fail', note: `exit ${e.status}: ${sensor.command.join(' ')}` }
+        : { verdict: 'error', note: `sensor command failed to run: ${sensor.command.join(' ')}` };
+    }
+    return run;
+  };
+
+  for (const [goal, c] of classification) {
+    if (c.bucket === 'done' || c.goalType === 'external') continue;
+    if (!gateApplies(gate, c, meta.get(goal))) continue;
+    const key = `vv:${gate.requires.artifact}:${goal}:${inputHash}`;
+    if (existingKeys.has(key)) continue; // this exact input already judged
+    const r = runOnce();
+    out.push({ ts: nowTs, kind: 'validity-verdict', goal, artifact: gate.requires.artifact,
+      verdict: r.verdict, source: 'sensor', inputHash, files: inputs,
+      ...(r.note ? { note: r.note } : {}), key });
   }
   return out;
 }

@@ -20,7 +20,7 @@ import { verifyRipe } from './verify.mjs';
 import { stepGate, newGoalState, KNOBS } from './hysteresis.mjs';
 import { TIMEOUT_TTL_DAYS } from './templates.mjs';
 import { evaluateGates } from './gates.mjs';
-import { specCheckFacts } from './sense/checks.mjs';
+import { specCheckFacts, commandCheckFacts } from './sense/checks.mjs';
 import { GATES, SENSORS, STATE_DIR, SNAP_DIR, REPO_ROOT } from './config.mjs';
 import { DegradedSenseError } from './sense/github.mjs';
 
@@ -276,15 +276,19 @@ export async function runTick({
   const vFacts = store.appendAll(verifierFacts(classification, meta, nowTs));
   if (vFacts.length) classification = fold(store.all());
 
-  // mechanical sensors (spec-check), then situational gates (shadow/enforce)
-  const specGate = GATES.find((g) => g.id === 'spec-check-clean');
-  if (specGate) {
-    const sFacts = store.appendAll(specCheckFacts({
-      gate: specGate, sensor: SENSORS[specGate.requires.artifact],
-      classification, meta, existingKeys: store.keys,
-      repoRoot: REPO_ROOT, nowTs,
-    }));
-    if (sFacts.length) console.error(`[tick] ${sFacts.length} sensor verdict(s)`);
+  // mechanical sensors, then situational gates (shadow/enforce). A gate has a
+  // sensor iff SENSORS carries its required artifact; dispatch by sensor kind
+  // ('allium' judges body-cited spec files, 'command' judges by exit code).
+  for (const gate of GATES) {
+    const sensor = SENSORS?.[gate.requires.artifact];
+    if (!sensor) continue; // operator-authority gates have no sensor
+    const args = { gate, sensor, classification, meta, existingKeys: store.keys,
+      repoRoot: REPO_ROOT, nowTs };
+    const produced = sensor.kind === 'allium' ? specCheckFacts(args)
+      : sensor.kind === 'command' ? commandCheckFacts(args)
+      : [];
+    const sFacts = store.appendAll(produced);
+    if (sFacts.length) console.error(`[tick] ${sFacts.length} ${gate.id} sensor verdict(s)`);
   }
   const gateResult = evaluateGates(GATES, classification, meta, store.all(), nowTs);
   const gParks = store.appendAll(gateResult.parkFacts);

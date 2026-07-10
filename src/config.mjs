@@ -62,6 +62,23 @@ const base = configPath ? dirname(configPath) : ENGINE_ROOT;
 
 export const GATES = mod.GATES;
 export const SENSORS = mod.SENSORS;
+
+// Per-repo delivery template (the thin-process consumer shape, tiller#1).
+// A config may export DELIVERY_TEMPLATE = { stages, ripeRequires } to replace
+// the engine defaults in templates.mjs — e.g. a thin repo whose whole
+// ripeness contract is one `shaped` label, with no blast-radius taxonomy and
+// no ceremony floor. Omitted fields keep the engine defaults, so existing
+// consumers (and TILLER_CONFIG-less checkouts) are unaffected.
+const { GOAL_TYPES, RIPE_REQUIRES: DEFAULT_RIPE_REQUIRES } = await import('./templates.mjs');
+const overrideRipe = mod.DELIVERY_TEMPLATE?.ripeRequires;
+export const DELIVERY_TEMPLATE = {
+  stages: mod.DELIVERY_TEMPLATE?.stages ?? GOAL_TYPES.delivery.stages,
+  ripeRequires: overrideRipe
+    ? { labels: overrideRipe.labels ?? [], labelPrefixes: overrideRipe.labelPrefixes ?? [] }
+    : DEFAULT_RIPE_REQUIRES,
+};
+export const RIPE_REQUIRES = DELIVERY_TEMPLATE.ripeRequires;
+
 export const STATE_DIR = resolve(base, mod.stateDir ?? 'state');
 export const SNAP_DIR = resolve(base, mod.snapshotDir ?? 'snapshots');
 export const REPO_ROOT = configPath

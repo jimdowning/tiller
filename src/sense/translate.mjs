@@ -10,10 +10,14 @@
 // timestamps.
 import { createHash } from 'node:crypto';
 import {
-  goalTypeOf, RIPE_REQUIRES, OPERATOR_SIGNAL,
+  goalTypeOf, OPERATOR_SIGNAL,
   DEP_BLOCK_PATTERNS, DEP_REF, STARTABLE_YES, RESOLVER,
   TASK_LIST_ITEM, PART_OF, FOCUS_LABELS, META_TRACKER_PREFIXES,
 } from '../templates.mjs';
+// The ripeness label contract is PER-REPO: config.mjs resolves it from the
+// target repo's DELIVERY_TEMPLATE override (thin repos may gate on a single
+// `shaped` label), defaulting to the engine's templates.mjs contract.
+import { RIPE_REQUIRES } from '../config.mjs';
 
 const bodyHash = (s) => createHash('sha256').update(s || '').digest('hex').slice(0, 12);
 const isMeta = (title = '') => META_TRACKER_PREFIXES.some((p) => title.startsWith(p));
