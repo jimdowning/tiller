@@ -1,0 +1,58 @@
+# CI for the engine repo (tiller#1). Three gates:
+#   test — the node:test suite (zero-dep, node --test)
+#   fuzz — the E2-port property fuzzer as a regression gate (12k seeds)
+#   spec — allium check/analyse on the classifier contract spec
+#          (errors fail; warnings ratcheted — scripts/check-spec.mjs)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Unit and integration tests
+        run: node --test 'test/*.test.mjs'
+
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Classifier property fuzz (regression gate)
+        run: node test/fuzz.mjs 12000
+
+  spec:
+    runs-on: ubuntu-latest
+    env:
+      ALLIUM_VERSION: 3.5.0
+      # Pinned by us (trust-on-first-use): the release's SHA256SUMS.txt does
+      # not cover the platform binaries. Bump together with ALLIUM_VERSION.
+      ALLIUM_SHA256: f33a9b581173919f2e2fbf3ab6297112e7e1d6e251bf94e957f43f849029c72c
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Install allium
+        run: |
+          curl -fsSL -o /tmp/allium.tar.gz \
+            "https://github.com/juxt/allium-tools/releases/download/v${ALLIUM_VERSION}/allium-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${ALLIUM_SHA256}  /tmp/allium.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/allium.tar.gz -C /tmp
+          sudo install /tmp/allium /usr/local/bin/allium
+          allium --version
+      - name: Classifier contract spec check
+        run: node scripts/check-spec.mjs spec/goal-liveness.allium
