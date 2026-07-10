@@ -18,8 +18,63 @@ node src/tick.mjs                # one live reconciliation tick (read-only fetch
 node src/tick.mjs --offline      # re-derive from the stored fact log only
 node src/explain.mjs 419         # why isn't #419 ripe, and what exactly clears it
 node src/attest.mjs 10 journey-articulation pass   # operator verdict stamp
-node --test 'test/*.test.mjs'    # 74 tests
+node --test 'test/*.test.mjs'    # 81 tests
+node test/fuzz.mjs               # classifier property fuzzer (12k seeds — the CI gate)
+node scripts/check-spec.mjs      # allium check/analyse on the contract spec
 ```
+
+CI (`.github/workflows/ci.yml`) runs all three gates — tests, fuzz, spec —
+on every push and PR.
+
+## Self-hosting (tiller-on-tiller)
+
+This repo dogfoods its own engine (#1): `tiller.config.mjs` at the root is a
+consumer-shaped config sensing `jimdowning/tiller` itself, run from the repo
+root:
+
+```
+TILLER_CONFIG=./tiller.config.mjs node src/tick.mjs
+```
+
+State lands in `.tiller/state/` (gitignored), snapshots in
+`.tiller/snapshots/` (committed). Development here runs a **thin delivery
+template** — the per-repo override introduced for exactly this purpose:
+
+- stages `shaped → ripe → pr-open → merged`; the whole ripeness contract is
+  one `shaped` label. No blast-radius taxonomy, no reversibility label, no
+  ceremony floor (a config's `DELIVERY_TEMPLATE` export replaces the engine
+  default in `src/templates.mjs`; consumers that don't override keep the
+  heavyweight contract unchanged).
+- changes land as commits straight to `main` (no PRs unless contested);
+  fast-forward pushes only, so pinned SHAs stay reachable.
+- two day-one situational gates (shadow mode) bind on goals touching the
+  classifier/fold: `classifier-fuzz` (a passing `fuzz-run` verdict from the
+  command sensor — `node test/fuzz.mjs`, input-hash keyed on
+  `src/classify.mjs` + `src/schema.mjs` + the fuzzer) and
+  `classifier-spec-sync` (the `spec/goal-liveness.allium` update, attested by
+  the **operator** via `attest.mjs` — an agent-sourced pass does not satisfy
+  it).
+
+## Consumer pin-bump gate (strengthsys)
+
+Strengthsys is insulated by its submodule pin: nothing here affects its
+coordination until a deliberate, reviewed pin bump. A pin-bump PR **must
+include an offline snapshot diff** — run `tick.mjs --offline` over the
+consumer's stored fact log under the old and the new engine, and diff the
+buckets:
+
+```
+# in the consumer repo, once per engine version (state copied so the real
+# hysteresis/snapshots are untouched):
+cp -r .tiller/state /tmp/pin-diff-state
+TILLER_CONFIG=/tmp/pin-diff.config.mjs node <old-engine>/src/tick.mjs --offline
+TILLER_CONFIG=/tmp/pin-diff.config.mjs node <new-engine>/src/tick.mjs --offline
+# diff the two snapshot .json files: bucket counts + per-goal membership
+```
+
+Bucket changes on real historical facts are exactly what the bump review
+reads: an intended semantic change shows up as an explainable membership
+diff; an unintended one is a regression caught before the pin lands.
 
 ## Configuration — `TILLER_CONFIG`
 
@@ -100,9 +155,11 @@ hysteresis.mjs           — E3's I4 gate (W=3 K=3 M=1.0 cw=2): raw-ripe goals
 tick.mjs                 — orchestration + snapshots/<date>.{json,md}
 ```
 
-Facts and buckets follow
-[`experiments/e2-liveness/goal-liveness.allium`](https://github.com/jimdowning/strengthsys/blob/main/design/coordination-model/experiments/e2-liveness/goal-liveness.allium)
-(in strengthsys).
+Facts and buckets follow [`spec/goal-liveness.allium`](spec/goal-liveness.allium) —
+the classifier contract, vendored from the E2 experiment artifact
+([original](https://github.com/jimdowning/strengthsys/blob/main/design/coordination-model/experiments/e2-liveness/goal-liveness.allium),
+in strengthsys) and now the living contract for this repo: a classifier/fold
+change is expected to update it (the `classifier-spec-sync` gate).
 
 ## Situational gates (shadow-first)
 
@@ -172,15 +229,19 @@ overdue.
 
 ## Honest limitations (preliminary)
 
+Each limitation below is a tracked goal in this repo's own backlog — the
+self-hosted instance senses them (#7–#10).
+
 - Sensing ingests issue timelines, comments, and bodies — not PR reviews, CI
   `workflow_run` conclusions, or repo-file predicates (the SYNTHESIS §2
   widening order). The `verified` stage of the delivery template is therefore
-  not yet derivable.
+  not yet derivable. (#7)
 - `heartbeat` facts are modelled (classifier + schema) but nothing emits them
   yet; wiring /loop-wrapped streams to append heartbeats is the dead-loop
-  detector (E0-07) and comes with the entry skills.
+  detector (E0-07) and comes with the entry skills. (#8)
 - Stage reporting beyond `conditioned`/`pr#N[-merged]` is thin; the template
-  registry exists but only gates ripeness via conditioning.
+  registry exists (and is per-repo overridable) but only gates ripeness via
+  the label contract. (#9)
 - Hysteresis holds a *newly seen* ripe goal for W ticks (day-one E3 knobs,
   deliberately small). If dispatch latency matters more than anti-thrash
   early on, run `--no-hysteresis` and calibrate against real churn.
@@ -194,4 +255,4 @@ overdue.
   [`decomposition-freshness.md`](https://github.com/jimdowning/strengthsys/blob/main/design/coordination-model/decomposition-freshness.md)
   (in strengthsys) — a `decomposition-verdict` fact
   (input-hash keyed, superseding) with a `needs-decomposition` park, the
-  gate pattern applied one level up.
+  gate pattern applied one level up. (#10)
