@@ -66,6 +66,18 @@ test('no focus:current journey — selection falls back to goal-number order', (
   assert.deepEqual(matched.map((r) => r.goal), [77, 122]);
 });
 
+test('a goal claimed by another session is not an available match — no double-dispatch', () => {
+  const facts = [goalFormed(1), goalFormed(2)];
+  const classification = fold(facts);
+  const meta = new Map([
+    [1, { labels: ['claimed-by:implementor'], focus: 'current' }], // higher priority, but taken
+    [2, { labels: [], focus: null }],
+  ]);
+  const { matched, skipped } = match(classification, meta, new Set(['agent']));
+  assert.deepEqual(matched.map((r) => r.goal), [2]); // #1 skipped though higher priority
+  assert.match(skipped.find((s) => s.goal === 1).why, /claimed by another session/);
+});
+
 test('routeFloor fullteam derives an interactive requirement', () => {
   const req = requirementsOf({ bucket: 'ripe', parks: [] }, { labels: [], routeFloor: 'fullteam' });
   assert.ok(req.has('interactive'));

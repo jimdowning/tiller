@@ -117,6 +117,16 @@ export function match(classification, meta, caps, hystGoals = {}) {
   for (const [goal, c] of classification) {
     if (c.bucket !== 'ripe' || c.goalType === 'external') continue;
     const m = meta.get(goal);
+    // A goal carrying any `claimed-by:*` label is in-flight in another lane —
+    // an implementor session already took it. It is not an available match, so
+    // skip it (mirrors the old strengthsys picker's `claimed-by:` drop, which
+    // is what stops two dispatches racing onto the same issue). The sensed
+    // label may lag a claim made since the last tick, so the dispatch wrapper
+    // still claims under a lock as the authoritative race guard.
+    if ((m?.labels ?? []).some((l) => l.startsWith('claimed-by:'))) {
+      skipped.push({ goal, title: c.title, why: 'claimed by another session' });
+      continue;
+    }
     const gate = hystGoals[goal];
     if (gate && gate.committed !== 'ripe') {
       skipped.push({ goal, title: c.title, why: 'held by hysteresis gate' });
@@ -164,8 +174,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(0);
   }
 
-  console.log(`capabilities: ${[...caps].sort().join(', ')}\n`);
   const { matched, skipped } = match(classification, meta, caps, hyst);
+
+  // `--pick`: machine mode for a dispatcher. Print the matched goal numbers in
+  // dispatch priority order, one per line (nothing when there are no matches).
+  // A wrapper walks this list top-down, applying any lane-local policy the
+  // engine deliberately does NOT model (e.g. strengthsys's reversibility:hard
+  // plan-approval gate) and claiming the first eligible goal under a lock.
+  // Raw writes, not console.log: console.log inspects a Number and colorizes
+  // it under FORCE_COLOR, which would corrupt a wrapper's `$(...)` capture.
+  if (args.includes('--pick')) {
+    for (const r of matched) process.stdout.write(`${r.goal}\n`);
+    process.exit(0);
+  }
+
+  console.log(`capabilities: ${[...caps].sort().join(', ')}\n`);
   console.log(`# Matched (${matched.length})\n`);
   for (const r of matched) {
     console.log(`- #${r.goal} ${r.title.slice(0, 70)}${r.focus ? ` [${r.focus}]` : ''}` +
