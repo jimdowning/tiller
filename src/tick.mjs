@@ -18,10 +18,10 @@ import { fold, unparkIsLive } from './classify.mjs';
 import { translate, descopeContradictions } from './sense/translate.mjs';
 import { verifyRipe } from './verify.mjs';
 import { stepGate, newGoalState, KNOBS } from './hysteresis.mjs';
-import { TIMEOUT_TTL_DAYS } from './templates.mjs';
+import { TIMEOUT_TTL_DAYS, stageOf, GOAL_TYPES } from './templates.mjs';
 import { evaluateGates } from './gates.mjs';
 import { specCheckFacts, commandCheckFacts } from './sense/checks.mjs';
-import { GATES, SENSORS, STATE_DIR, SNAP_DIR, REPO_ROOT } from './config.mjs';
+import { GATES, SENSORS, STATE_DIR, SNAP_DIR, REPO_ROOT, DELIVERY_TEMPLATE } from './config.mjs';
 import { DegradedSenseError } from './sense/github.mjs';
 
 const args = process.argv.slice(2);
@@ -168,8 +168,13 @@ export function buildSnapshot(classification, meta, decisions, wedges, nowTs, ti
     if (c.bucket === 'done') { rows.done++; continue; }
     const m = meta.get(goal);
     const d = decisions?.get(goal);
+    // Stage is REPORTING ONLY (#9): the furthest template stage evidenced by
+    // this goal's artifacts + bucket. Journeys use their own template; every
+    // other goal uses the active (possibly per-repo thin) delivery template.
+    const template = c.goalType === 'journey' ? GOAL_TYPES.journey : DELIVERY_TEMPLATE;
+    const stage = stageOf(c, c.artifacts ?? [], template);
     const row = { goal, title: c.title || m?.title || '', goalType: c.goalType,
-      focus: m?.focus ?? null, routeFloor: m?.routeFloor };
+      focus: m?.focus ?? null, routeFloor: m?.routeFloor, stage };
     if (c.bucket === 'ripe') {
       if (d && !d.dispatch) rows.holding.push(row);
       else rows.ripe.push(row);
@@ -204,7 +209,8 @@ export function renderMarkdown(snap) {
   }
   L.push('');
   const item = (r) => `- #${r.goal} ${r.title}${r.goalType === 'journey' ? ' _(journey)_' : ''}` +
-    `${r.focus ? ` **[${r.focus}]**` : ''}${r.routeFloor ? ` · floor:${r.routeFloor}` : ''}`;
+    `${r.focus ? ` **[${r.focus}]**` : ''}${r.stage ? ` · stage:${r.stage}` : ''}` +
+    `${r.routeFloor ? ` · floor:${r.routeFloor}` : ''}`;
   L.push('## Ripe (dispatchable)', '');
   L.push(...(snap.ripe.length ? snap.ripe.map(item) : ['_none_']), '');
   if (snap.holding.length) {

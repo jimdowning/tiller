@@ -47,6 +47,65 @@ export function goalTypeOf(labels) {
   return 'delivery';
 }
 
+// --- Stage reporting (#9) --------------------------------------------------
+// The furthest template stage a goal has reached, derived from its
+// artifact-produced facts and fold state. REPORTING ONLY: the classifier's
+// bucket logic (classify.mjs) never reads a stage — stages are a human-facing
+// lens over the same artifacts, rendered as a column in the snapshot. Keeping
+// bucket assignment stage-free is the #9 constraint, and why this derivation
+// lives here rather than in the fold.
+const PR_OPEN_ARTIFACT = /^pr#\d+$/;
+const PR_MERGED_ARTIFACT = /^pr#\d+-merged$/;
+
+// Evidence that a named stage has been REACHED, over (goal, artifacts). Two
+// kinds:
+//   - structural — the fold's own state (`bucket`) or the PR artifacts
+//     translate.mjs emits (`pr#N`, `pr#N-merged`);
+//   - conventional — any stage NOT listed here is reached when an artifact of
+//     the same name was produced (the artifact-name == stage-name convention;
+//     e.g. `implemented` / `reviewed` / `verified` once the widening senses of
+//     #7 emit them).
+// `shaped`/`conditioned` both map to the `conditioned` artifact: satisfying the
+// ripeRequires labels (a lone `shaped` label under the thin template) is what
+// translate.mjs records as `artifact-produced: conditioned`, whatever the
+// gating label is named.
+export const STAGE_EVIDENCE = {
+  shaped: (_g, a) => a.includes('conditioned'),
+  conditioned: (_g, a) => a.includes('conditioned'),
+  ripe: (g) => g.bucket === 'ripe',
+  'children-done': (g) => g.bucket === 'ripe', // a journey ripens once children are done
+  'pr-open': (_g, a) => a.some((x) => PR_OPEN_ARTIFACT.test(x)),
+  merged: (_g, a) => a.some((x) => PR_MERGED_ARTIFACT.test(x)),
+  done: (g) => g.bucket === 'done',
+  closed: (g) => g.bucket === 'done',
+};
+
+function stageReached(stage, goal, artifacts) {
+  const ev = STAGE_EVIDENCE[stage];
+  return ev ? ev(goal, artifacts) : artifacts.includes(stage);
+}
+
+/**
+ * The furthest stage `goal` has reached in `template`, or null if it has not
+ * reached the first stage. Reporting only — never consulted by the fold.
+ *
+ * "Furthest" is the LAST stage in template order whose evidence holds, so gaps
+ * are tolerated: a merged goal reads `merged` even when no artifact yet
+ * evidences the intermediate `implemented`/`reviewed` stages (a widening-sense
+ * follow-on, #7).
+ *
+ * @param goal      a folded goal — needs `.bucket`
+ * @param artifacts the goal's artifact-produced names (`goal.artifacts`)
+ * @param template  { stages: string[] } — the delivery or journey template
+ */
+export function stageOf(goal, artifacts = [], template = GOAL_TYPES.delivery) {
+  let reached = null;
+  for (const stage of template?.stages ?? []) {
+    if (stageReached(stage, goal, artifacts)) reached = stage;
+  }
+  return reached;
+}
+
 // Focus markers (replace [CURRENT]/[NEXT] milestone-name markers).
 export const FOCUS_LABELS = { 'focus:current': 'current', 'focus:next': 'next' };
 
