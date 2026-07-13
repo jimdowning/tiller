@@ -149,9 +149,11 @@ verify.mjs               — E4's thin verifier over ripe candidates: operator-
    │                       gated / approach-fork / hard-dep-on-open + route
    ▼                       floor annotation. Fails park body-keyed → an edited
    │                       body re-observes and re-verifies automatically.
-hysteresis.mjs           — E3's I4 gate (W=3 K=3 M=1.0 cw=2): raw-ripe goals
-   │                       hold-open ~W ticks before dispatch; committed
-   ▼                       ripeness survives one-tick flickers
+hysteresis.mjs           — E3's I4 gate (W=3 K=3 M=1.0 cw=2), ASYMMETRIC: a
+   │                       goal's FIRST ripening dispatches immediately;
+   │                       committed ripeness survives one-tick flickers; only
+   ▼                       a goal that has de-committed once holds-open (W/K) on
+   │                       re-ripening (operator 2026-07-11 — see file header)
 tick.mjs                 — orchestration + snapshots/<date>.{json,md}
 ```
 
@@ -242,9 +244,14 @@ self-hosted instance senses them (#7–#10).
 - Stage reporting beyond `conditioned`/`pr#N[-merged]` is thin; the template
   registry exists (and is per-repo overridable) but only gates ripeness via
   the label contract. (#9)
-- Hysteresis holds a *newly seen* ripe goal for W ticks (day-one E3 knobs,
-  deliberately small). If dispatch latency matters more than anti-thrash
-  early on, run `--no-hysteresis` and calibrate against real churn.
+- Hysteresis is **asymmetric** (operator 2026-07-11): a *newly seen* ripe goal
+  dispatches immediately (no hold-open), because premature ripening had never
+  occurred (0 down-flickers over the first live ticks) while the ~W-tick
+  dispatch latency was a real cost. The W/K hold-open is retained only for
+  *re*-ripening after a de-commit (a goal that has proven flicker-prone), and
+  the M/cw down-side damping is unchanged. Reinstate first-commit hold-open
+  (one-line: drop the `!hasCommitted` fast path in `hysteresis.mjs`) or run
+  `--no-hysteresis` if churn from the LLM-judge signal starts to bite.
 - The dispatcher/entry skills (`/achieve`, `/po-todo` readers) are not built;
   the engine produces the derived plan (snapshot), it does not yet dispatch.
 - Decomposition *edges* are facts, but the decomposition *act* is not — so
