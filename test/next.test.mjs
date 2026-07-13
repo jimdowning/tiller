@@ -78,6 +78,20 @@ test('a goal claimed by another session is not an available match — no double-
   assert.match(skipped.find((s) => s.goal === 1).why, /claimed by another session/);
 });
 
+test('a ripe journey is not an implementor match — its work is its children', () => {
+  const facts = [
+    goalFormed(77),
+    goalFormed(613, 'journey', 'Journey: training history'),
+  ];
+  const classification = fold(facts);
+  const meta = new Map([
+    [77, { labels: [], focus: null }],
+    [613, { labels: ['goal:journey'], goalType: 'journey', focus: null }],
+  ]);
+  const { matched } = match(classification, meta, new Set(['agent']));
+  assert.deepEqual(matched.map((r) => r.goal), [77]); // journey #613 excluded
+});
+
 test('routeFloor fullteam derives an interactive requirement', () => {
   const req = requirementsOf({ bucket: 'ripe', parks: [] }, { labels: [], routeFloor: 'fullteam' });
   assert.ok(req.has('interactive'));

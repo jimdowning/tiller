@@ -116,6 +116,12 @@ export function match(classification, meta, caps, hystGoals = {}) {
   const currentChildren = focusCurrentChildren(classification, meta);
   for (const [goal, c] of classification) {
     if (c.bucket !== 'ripe' || c.goalType === 'external') continue;
+    // A journey is an umbrella whose *work* is its children; you dispatch the
+    // children, not the journey. A journey's own ripeness is a transition
+    // surface (all children done → the operator's close/promote decision),
+    // exposed via the operator projection (`--as operator`), never as
+    // implementor work. So it is not an available implementor match.
+    if (c.goalType === 'journey') continue;
     const m = meta.get(goal);
     // A goal carrying any `claimed-by:*` label is in-flight in another lane —
     // an implementor session already took it. It is not an available match, so
