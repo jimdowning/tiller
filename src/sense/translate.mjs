@@ -13,6 +13,7 @@ import {
   goalTypeOf, OPERATOR_SIGNAL,
   DEP_BLOCK_PATTERNS, DEP_REF, STARTABLE_YES, RESOLVER,
   TASK_LIST_ITEM, PART_OF, FOCUS_LABELS, META_TRACKER_PREFIXES,
+  earliestStartOf,
 } from '../templates.mjs';
 // The ripeness label contract is PER-REPO: config.mjs resolves it from the
 // target repo's DELIVERY_TEMPLATE override (thin repos may gate on a single
@@ -213,8 +214,13 @@ export function translate(items, externals = new Map(), nowTs = new Date().toISO
     push({ ts: nowTs, kind: 'body-observed', goal: n, hash, key: `body:${n}:${hash}` });
 
     const focus = Object.entries(FOCUS_LABELS).find(([l]) => labels.has(l))?.[1] ?? null;
+    // Date gate: the DECLARED earliest-start date (#11). The tick decides
+    // whether it currently blocks by comparing against the injected tick date
+    // (dateGateFacts) — sensing only records the declaration, so the fold stays
+    // pure and time-free.
+    const earliestStart = earliestStartOf(body, labels);
     meta.set(n, { number: n, title: item.title, labels: [...labels], goalType,
-      focus, body, bodyHash: hash, bodyDeclared });
+      focus, body, bodyHash: hash, bodyDeclared, earliestStart });
   }
 
   // ---- externally referenced items (closed deps must read as done) ---------

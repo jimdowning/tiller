@@ -25,6 +25,7 @@ const HUMANIZE = {
   'body-observed': 'edit the issue body (it re-verifies automatically)',
   'validity-verdict': 'a passing validity verdict from the relevant check',
   'timeout': 'TTL expiry — surfaces this park as overdue for attention (never releases it)',
+  'date-reached': 'the earliest-start date arrives (clears automatically — no operator action)',
   'contradiction': 'retire the offending fact (e.g. break the dependency cycle)',
   'heartbeat': 'a liveness pulse from the owning stream',
 };

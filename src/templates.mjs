@@ -80,6 +80,32 @@ export const RESOLVER = /\*\*FYI\*\*|startable:\s*`?yes|re-conditioned|condition
 export const TASK_LIST_ITEM = /^\s*[-*]\s*\[( |x|X)\]\s*.*?#(\d+)/gm;
 export const PART_OF = /\bpart of #(\d+)/i;
 
+// Date-gate sensing (#11): an earliest-start marker keeps an otherwise-ripe
+// goal OUT of `ripe` until the tick date reaches it — a first-class "not yet
+// time" gate, distinct from "not yet understood" (unconditioned). Two
+// equivalent declared forms:
+//   - a body line `earliest-start: YYYY-MM-DD`
+//   - a `gated-until:YYYY-MM-DD` label
+// When both are present the LATEST (most conservative) date wins.
+export const EARLIEST_START = /^[ \t>*-]*earliest-start:\s*(\d{4}-\d{2}-\d{2})\b/im;
+export const GATED_UNTIL_LABEL = 'gated-until:';
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The declared earliest-start date (ISO YYYY-MM-DD) for a goal, or null. */
+export function earliestStartOf(body = '', labels = new Set()) {
+  const dates = [];
+  const m = body.match(EARLIEST_START);
+  if (m) dates.push(m[1]);
+  for (const l of labels) {
+    if (!l.startsWith(GATED_UNTIL_LABEL)) continue;
+    const d = l.slice(GATED_UNTIL_LABEL.length).trim();
+    if (ISO_DATE.test(d)) dates.push(d);
+  }
+  if (!dates.length) return null;
+  // most conservative: the latest gate. ISO dates sort lexically.
+  return dates.sort().at(-1);
+}
+
 // Meta-tracker prefixes still excluded from the goal population — PURE
 // bookkeeping only. Journeys are NOT here: they are genuine goals now.
 export const META_TRACKER_PREFIXES = ['Elaboration:', 'Roadmap', '[Roadmap]'];

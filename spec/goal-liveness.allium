@@ -65,6 +65,10 @@ enum ProducibleFactKind {
     heartbeat |
     operator_response |
     timeout |
+    date_reached |      -- a clock fact that RELEASES: the tick date reached a
+                        -- goal's earliest-start gate (#11). Unlike `timeout`
+                        -- (surfaces-never-releases) it clears the date_gate park,
+                        -- since a date gate genuinely expires with time.
     contradiction
 }
 
@@ -87,7 +91,10 @@ enum ParkReason {
     budget |
     dependency_cycle |
     awaiting_next_tick | -- E0-07 loop heartbeat park
-    route_ambiguity      -- E0-08 non-interactive lane park
+    route_ambiguity |    -- E0-08 non-interactive lane park
+    date_gate            -- #11: an earliest-start date in the future. Unpark
+                         -- references date_reached (producible) | body-observed,
+                         -- so it is live and clears itself when time passes.
 }
 
 ------------------------------------------------------------

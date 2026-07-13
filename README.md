@@ -216,6 +216,15 @@ no-new-warnings ratchet) is an open operator calibration.
 - **Untracked dependencies park** (`parked(untracked-dependency)`, the E6
   #419 correction) with a producible unpark: a tracking issue appearing
   (`dependency-declared`), a derisking reversal, or the timeout surfacing.
+- **Date gates keep "not yet time" out of `ripe`** (`parked(date-gate)`, #11).
+  A body line `earliest-start: YYYY-MM-DD` or a `gated-until:YYYY-MM-DD` label
+  parks an otherwise-ripe goal until the *tick date* reaches it, then clears
+  itself — no operator action — via a manufactured `date-reached` fact. This
+  separates "not yet time" (a legitimate wait on a date) from "not yet
+  understood" (unconditioned), so a conditioned-but-embargoed goal need not be
+  left unconditioned to stay undispatched. The comparison uses the injected
+  tick date, so ticks stay deterministic/replayable; editing the marker
+  re-derives the gate on the next tick.
 - **Externals**: refs pointing outside the open set are resolved read-only so
   a closed dependency reads as done, not absent. Unresolvable refs stay
   blocking — the safe, re-checkable default.

@@ -68,6 +68,41 @@ export function manufactureTimeouts(classification, nowTs, ttlDays = TIMEOUT_TTL
   return out;
 }
 
+/**
+ * Date gates (#11): keep a goal whose earliest-start date is in the future OUT
+ * of `ripe`. The gate is a park (reason `date-gate`) that clears automatically
+ * — no operator action — once the tick date reaches it, via a manufactured
+ * `date-reached` fact fired through the classifier's generic-unpark path.
+ *
+ * Manufactured here (not in translate/fold) for two reasons: the fold stays
+ * pure and time-free, and — mirroring the verifier park — the park is keyed by
+ * `bodyHash` and stamped with `nowTs`, so it is re-emitted on every body edit
+ * and survives that same tick's `body-observed`. That gives change/removal of
+ * the marker a free clear (any body edit fires the park's `body-observed`
+ * disjunct, and the current body re-derives the gate), while an unrelated edit
+ * does not defeat a still-future gate. Deterministic: the comparison uses the
+ * injected tick date, so replaying a tick reproduces its classification.
+ */
+export function dateGateFacts(classification, meta, nowTs) {
+  const out = [];
+  const today = nowTs.slice(0, 10);
+  for (const [goal, m] of meta) {
+    if (!m.earliestStart) continue;
+    if (classification.get(goal)?.bucket === 'done') continue;
+    if (today < m.earliestStart) {
+      out.push({ ts: nowTs, kind: 'park', goal, reason: 'date-gate',
+        unpark: ['date-reached', 'body-observed'],
+        evidence: [`earliest-start ${m.earliestStart}`],
+        key: `date-gate:${goal}:${m.bodyHash}` });
+    } else {
+      // gate reached — release any standing date-gate park (generic firing)
+      out.push({ ts: nowTs, kind: 'date-reached', ref: goal,
+        key: `date-reached:${goal}:${m.earliestStart}` });
+    }
+  }
+  return out;
+}
+
 /** Run the thin verifier over ripe delivery goals; returns park + dep facts. */
 export function verifierFacts(classification, meta, nowTs) {
   const out = [];
@@ -273,6 +308,11 @@ export async function runTick({
   let classification = fold(store.all());
   const timeouts = store.appendAll(manufactureTimeouts(classification, nowTs));
   if (timeouts.length) classification = fold(store.all());
+  // date gates run BEFORE the verifier/gates: a future-dated goal parks, so the
+  // ripe-only verifier and sensor gates skip it (no wasted work on work that
+  // isn't startable yet).
+  const dgFacts = store.appendAll(dateGateFacts(classification, meta, nowTs));
+  if (dgFacts.length) classification = fold(store.all());
   const vFacts = store.appendAll(verifierFacts(classification, meta, nowTs));
   if (vFacts.length) classification = fold(store.all());
 

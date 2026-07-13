@@ -28,6 +28,11 @@
 //   heartbeat            { source }                 -- liveness pulse from a stream
 //   operator-response    { ref }                    -- the operator acted on `ref`
 //   timeout              { ref }                    -- manufactured absence→fact
+//   date-reached         { ref }                    -- manufactured when the tick
+//                        date reaches a goal's earliest-start gate; fires the
+//                        `date-gate` park's unpark (#11). Like `timeout` it is a
+//                        clock fact, but unlike `timeout` it RELEASES (the gate
+//                        genuinely clears with time), so it is a plain unpark.
 //   body-observed        { goal, hash }             -- issue body (re)read; hash-keyed
 //   capability-asserted  { capability }
 //   capability-revoked   { capability }
@@ -48,6 +53,7 @@ export const PRODUCIBLE_FACT_KINDS = new Set([
   'heartbeat',
   'operator-response',
   'timeout',
+  'date-reached',
   'body-observed',
   'capability-asserted',
   'capability-revoked',
