@@ -1,8 +1,8 @@
 # CI for the engine repo (tiller#1). Four gates:
 #   test — the node:test suite (zero-dep, node --test)
 #   fuzz — the E2-port property fuzzer as a regression gate (12k seeds)
-#   spec — allium check/analyse on the classifier contract spec
-#          (errors fail; warnings ratcheted — scripts/check-spec.mjs)
+#   spec — allium check/analyse on every behavioral contract spec in spec/
+#          (errors fail; warnings ratcheted per spec — scripts/check-spec.mjs)
 #   diagram — the README Workflows mermaid section matches the active config
 name: CI
 
@@ -55,8 +55,8 @@ jobs:
           tar -xzf /tmp/allium.tar.gz -C /tmp
           sudo install /tmp/allium /usr/local/bin/allium
           allium --version
-      - name: Classifier contract spec check
-        run: node scripts/check-spec.mjs spec/goal-liveness.allium
+      - name: Behavioral contract spec check (whole spec/ tree)
+        run: node scripts/check-spec.mjs
 
   diagram:
     runs-on: ubuntu-latest

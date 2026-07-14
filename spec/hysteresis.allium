@@ -1,0 +1,154 @@
+-- allium: 3
+-- hysteresis.allium
+--
+-- The anti-thrash gate on ripeness, per goal, across ticks (src/hysteresis.mjs).
+-- The classifier's raw signal per goal per tick is binary (bucket = ripe ? 1 : 0);
+-- a judgement-driven signal can flicker, and dispatching on every flicker churns
+-- work. Hysteresis is a small damping step between raw ripeness and the plan.
+--
+-- Scope: The hysteresis contract, in the ASYMMETRIC form adopted 2026-07-11.
+-- Covers:
+--
+--   - First ripening dispatches IMMEDIATELY: a goal that has never committed
+--     commits the moment its raw signal is ripe — no hold-open.
+--   - De-commit is DAMPED: a committed goal is abandoned only past the commit
+--     window and only on a fully contradicting signal (the margin), filtering
+--     single-tick down-flickers.
+--   - Re-commit is DAMPED: once a goal has de-committed it has proven
+--     flicker-prone, so re-ripening must clear a stable, saturated window before
+--     re-dispatching. This is where the hold-open still bites.
+--   - The holding ("ripening") state: raw signal ripe but the gate has not
+--     committed — only reachable during a damped re-commit.
+--
+-- The E3 numeric knobs (W stability window, K averaging window, M margin,
+-- commit window) are abstracted to the domain predicates they compute
+-- (`stable`, `saturated`, `contradicting`, `past_commit_window`): the specific
+-- window lengths and the 0..1 margin arithmetic are tuning, not contract.
+--
+-- Excludes:
+--   - The signal-smoothing arithmetic (moving average, margin-to-switch on
+--     [0,1]) — implementation of the predicates below.
+--   - What produces the raw ripe signal (the classifier fold + verifier + gates).
+--   - Persistence / state migration of the gate across ticks.
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum Committed {
+    -- The gate's committed view of a goal — what it tells the dispatcher.
+    ripe |       -- committed: safe to hand to the dispatcher
+    not_ripe     -- not committed
+}
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity GoalGate {
+    -- One goal's damping gate, advanced one tick at a time. The window
+    -- predicates summarise the retained raw-signal history.
+    goal: String
+    raw_ripe: Boolean          -- this tick's raw classifier signal (ripe?)
+    committed: Committed        -- the damped view handed downstream
+    has_committed: Boolean      -- has this goal ever committed (ripe) before?
+    stable: Boolean             -- raw signal unchanged over the stability window
+    saturated: Boolean          -- averaged signal is fully ripe over the window
+    contradicting: Boolean      -- averaged signal is fully not-ripe (the margin)
+    past_commit_window: Boolean -- min ticks since last commit have elapsed
+
+    -- Derived readouts (what the tick reports):
+    dispatch: committed = ripe
+    -- committed view says ripe → safe to dispatch
+    holding: raw_ripe = true and committed = not_ripe
+    -- raw signal ripe but not committed — only during a damped re-commit
+
+    -- Derived gate conditions (asymmetric):
+    first_commit_ready: has_committed = false and raw_ripe = true
+    -- never committed and raw-ripe → commit immediately, no hold-open
+    recommit_ready: committed = not_ripe and has_committed = true
+                    and stable = true and saturated = true
+    -- proven flicker-prone → re-commit only after a stable, saturated window
+    decommit_ready: committed = ripe and past_commit_window = true
+                    and contradicting = true
+    -- de-commit only past the window and on a fully contradicting signal
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule FirstRipeningCommitsImmediately {
+    -- The optimistic up-side. A goal that has never committed commits the
+    -- moment its raw signal is ripe — dispatch latency is the live cost and
+    -- premature first ripening has not occurred in practice.
+    when: g: GoalGate.first_commit_ready
+
+    ensures:
+        g.committed = ripe
+        g.has_committed = true
+
+    @guidance
+        -- No stability/averaging window is required on the FIRST commit; the W/K
+        -- hold-open is dropped here and restored only after a goal has shown it
+        -- can flicker (dampedRecommit). Reinstating first-commit hold-open is a
+        -- one-line change if a noisier signal ever bites.
+}
+
+rule DampedRecommitHoldsOpen {
+    -- The damped up-side. Once a goal has de-committed it has proven
+    -- flicker-prone, so its re-ripening must clear the stable + saturated window
+    -- before re-dispatching. Until then the goal is `holding`, not dispatched.
+    when: g: GoalGate.recommit_ready
+
+    ensures:
+        g.committed = ripe
+
+    @guidance
+        -- has_committed stays true. While raw_ripe holds but this window has not
+        -- yet cleared, `holding` is true and `dispatch` is false — the visible
+        -- "ripening" line in the snapshot.
+}
+
+rule DeCommitPastWindowAndMargin {
+    -- The damped down-side (the load-bearing half). A committed goal is
+    -- abandoned only once it is past the commit window AND the signal is fully
+    -- contradicting — a single-tick down-flicker never de-commits.
+    when: g: GoalGate.decommit_ready
+
+    ensures:
+        g.committed = not_ripe
+
+    @guidance
+        -- The margin M=1.0 means only a saturated-against window (smoothed
+        -- signal 0) satisfies `contradicting`; smaller margins would de-commit
+        -- more eagerly. commit-window prevents flip-flop right after committing.
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant DispatchIsCommittedRipe {
+    -- The gate's output to the dispatcher is exactly its committed view: a goal
+    -- is dispatchable iff the gate has committed it ripe.
+    for g in GoalGates:
+        g.dispatch = (g.committed = ripe)
+}
+
+invariant HoldingImpliesHasCommittedBefore {
+    -- THE asymmetry. A goal is only ever held ("ripening") during a damped
+    -- re-commit — which is only possible after it has committed and de-committed
+    -- at least once. A goal that has never committed is never held: its first
+    -- ripening dispatches immediately.
+    for g in GoalGates where holding = true:
+        g.has_committed = true
+}
+
+invariant NeverCommittedRipeDispatchesImmediately {
+    -- The direct statement of the optimistic up-side: a never-committed goal
+    -- whose raw signal is ripe is committed (and hence dispatched) with no
+    -- hold-open — it is never left in the holding state.
+    for g in GoalGates where has_committed = false and raw_ripe = true:
+        g.holding = false
+}

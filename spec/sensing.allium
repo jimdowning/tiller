@@ -1,0 +1,187 @@
+-- allium: 3
+-- sensing.allium
+--
+-- The sense boundary: GitHub state → canonical facts (src/sense/translate.mjs,
+-- src/sense/github.mjs, src/store.mjs, and the tick's plausibility guard). This
+-- is the one deliberately imperative stage — sensing is irreducibly lexical, so
+-- all the heuristics are quarantined here and everything downstream operates on
+-- clean facts. The CONTRACT this spec pins is not the heuristics but the
+-- properties that make ticks deterministic and safe: idempotent re-derivation,
+-- append-only correction, safe external resolution, and fail-loud degradation.
+--
+-- Scope: The sensing-determinism + safety contract. Covers:
+--
+--   - Stable fact identity: every fact carries either an event timestamp
+--     (event-derived) or a logical key (body/verdict-derived, mutable state) —
+--     so re-sensing unchanged history re-derives identical facts that the
+--     store dedups to no-ops. This is what makes ticks idempotent and replayable.
+--   - Append-only correction: state is never modified or deleted; a change is a
+--     `contradiction` fact that retires a prior fact without erasing it
+--     (descope of a task-list edge is the canonical case).
+--   - Safe external resolution: a reference outside the open set is resolved
+--     read-only — a CLOSED ref reads as done; an UNRESOLVED (absent/deleted) ref
+--     stays blocking, the safe re-checkable default.
+--   - Degraded senses fail loudly: an incomplete search, a truncated page, or an
+--     implausibly shrunken open set ABORTS the tick BEFORE any fact append or
+--     meta write — a degraded sense never clobbers state. `--accept-shrink`
+--     accepts a genuine mass-close explicitly.
+--
+-- Excludes:
+--   - The lexical heuristics (which regex reads a dependency block, a focus
+--     label, an earliest-start date). Those are sensing internals; the domain
+--     concern is the fact they produce.
+--   - The classifier fold over the produced facts (goal-liveness.allium).
+--   - PR/issue field shapes from the GitHub API (plumbing).
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    min_previous_open: Integer = 5
+    -- The shrink guard is inert until a previous sense was at least this big;
+    -- below it, a small open set is unremarkable, not degraded.
+
+    -- The guard fires when the new open set is under HALF the previous count.
+    -- Expressed in the plausibility predicate as `open_count * 2 >=
+    -- previous_open_count` to avoid a fractional threshold.
+}
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity Fact {
+    -- A sensed, immutable assertion appended to the log. Its IDENTITY is either
+    -- an event timestamp (content-dedup) or a logical key (key-dedup); exactly
+    -- one is always present, which is what makes re-sensing a no-op.
+    kind: String
+    has_event_timestamp: Boolean  -- event-derived: stable ts from a GitHub event
+    has_logical_key: Boolean       -- body/verdict-derived: key over mutable state
+    identity: has_event_timestamp or has_logical_key
+}
+
+entity ExternalRef {
+    -- A #N reference pointing outside the sensed open set, resolved read-only.
+    number: String
+    resolved: Boolean       -- the ref was found (open or closed)
+    closed: Boolean         -- resolved and in the closed state
+    reads_done: resolved and closed
+    -- a closed ref reads as done; an unresolved ref never does (stays blocking)
+}
+
+entity BodyEdge {
+    -- A body-declared dependency edge (task-list `- [ ] #N` / `Part of #N`).
+    -- When a body no longer declares an edge that the log still carries, the
+    -- edge is descoped by CONTRADICTION, not deletion.
+    goal: String
+    depends_on: String
+    still_declared: Boolean  -- present in a current body this tick
+}
+
+entity Sense {
+    -- One tick's sense of the open set, and its plausibility. `degraded` folds
+    -- the three fail-loud conditions; `aborted_before_write` records that a
+    -- degraded sense stopped the tick before touching the fact log or meta.
+    previous_open_count: Integer
+    open_count: Integer
+    incomplete: Boolean      -- GitHub returned incomplete_results
+    truncated: Boolean       -- collected fewer than total_count (pagination bound)
+    accept_shrink: Boolean   -- operator override for a genuine mass-close
+
+    implausible_shrink: previous_open_count >= min_previous_open
+                        and open_count * 2 < previous_open_count
+    degraded: incomplete or truncated or implausible_shrink
+    aborted_before_write: Boolean
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule DegradedSenseAbortsBeforeWrite {
+    -- A degraded sense stops the tick before any fact append, descope
+    -- contradiction, or meta write. The fact log would survive a bogus small
+    -- sense (a missing issue just gets no new facts), but the meta cache used to
+    -- detect shrinkage would be poisoned — so the abort precedes the meta write.
+    when: s: Sense.degraded
+    requires: s.accept_shrink = false
+
+    ensures:
+        s.aborted_before_write = true
+
+    @guidance
+        -- Only an implausible SHRINK is overridable (--accept-shrink, a genuine
+        -- mass-close); an incomplete or truncated search is always fatal, since
+        -- it is a wrong view of the world, not a real one.
+}
+
+rule ClosedExternalReadsAsDone {
+    -- Safe external resolution. A reference outside the open set that resolves
+    -- to a CLOSED issue reads as a done goal, so a closed dependency does not
+    -- read as absent-and-blocking.
+    when: r: ExternalRef.created
+    requires: r.closed = true
+
+    ensures:
+        r.reads_done = true
+
+    @guidance
+        -- An UNRESOLVED ref (deleted / unknown) is deliberately left absent: the
+        -- classifier treats an absent dependency as still-blocking, the safe
+        -- re-checkable default. See UnresolvedRefStaysBlocking.
+}
+
+rule DescopedEdgeIsContradictedNotDeleted {
+    -- Append-only correction. A body edge the log carries but no current body
+    -- still declares is retired by a contradiction fact — the history of "this
+    -- used to be in scope" survives; nothing is erased.
+    when: e: BodyEdge.created
+    requires: e.still_declared = false
+
+    ensures:
+        Contradiction.created(edge: e)
+
+    @guidance
+        -- The contradiction retires the derived edge without deleting the
+        -- original dependency-declared fact (invariant I1 in goal-liveness).
+        -- Only edges whose declaring side was observed this tick are re-judged.
+}
+
+------------------------------------------------------------
+-- Entities (correction)
+------------------------------------------------------------
+
+entity Contradiction {
+    -- The append-only correction fact: retires a prior fact's derived effect
+    -- without removing it from the log.
+    edge: BodyEdge
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant EveryFactHasStableIdentity {
+    -- The idempotence/replayability foundation: every sensed fact carries a
+    -- dedup identity — an event timestamp or a logical key. Re-sensing the same
+    -- history therefore re-derives facts that all dedup to no-ops.
+    for f in Facts:
+        f.identity = true
+}
+
+invariant DegradedNeverClobbers {
+    -- The fail-loud safety property: a degraded sense that is not explicitly
+    -- accepted aborts before writing. State is never overwritten by a wrong
+    -- view of the world.
+    for s in Senses where degraded = true and accept_shrink = false:
+        s.aborted_before_write = true
+}
+
+invariant UnresolvedRefStaysBlocking {
+    -- A reference that cannot be resolved never reads as done — it stays
+    -- blocking, the safe re-checkable default. Only a resolved-and-closed ref
+    -- reads done.
+    for r in ExternalRefs where resolved = false:
+        r.reads_done = false
+}

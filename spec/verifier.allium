@@ -1,0 +1,196 @@
+-- allium: 3
+-- verifier.allium
+--
+-- The thin deterministic verifier over ripe candidates (src/verify.mjs). The
+-- classifier fold (goal-liveness.allium) decides a goal is UN-blocked; the
+-- verifier decides whether it is actually DISPATCHABLE, and with how much
+-- ceremony. It is a pure predicate over the goal's issue-body text and the
+-- current fold — no LLM, no network, no hidden state.
+--
+-- Scope: The verify-stage contract. Covers:
+--
+--   - The three dispatchability checks that can PARK a ripe candidate
+--     (operator-gated prerequisite, undecided approach fork, hard dependency on
+--     a not-done goal), each earning its keep by catching a distinct
+--     not-really-startable shape.
+--   - The route-floor annotation: a blast-radius minimum derived from the cited
+--     paths/keywords that ANNOTATES the dispatch route and never blocks.
+--   - Body-keyed liveness: a verifier park's identity includes the body hash, so
+--     an edited body re-observes and the verifier re-runs against the new text —
+--     the park clears itself, no manual unpark.
+--   - The dependency-recording side effect: a hard dependency the verifier finds
+--     in the body is also emitted as a dependency-declared fact, since it is a
+--     real edge the comment-sensing may have missed.
+--
+-- Excludes:
+--   - The lexical heuristics themselves (which regexes match a "secret", a
+--     "gating phrase", a cross-cutting path). Those are sensing implementation;
+--     the domain fact is "a named external prerequisite is present, unresolved".
+--   - The classifier fold that produces the ripe candidates (goal-liveness.allium).
+--   - Situational validity gates (gates.allium) — a separate, verdict-driven layer.
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum Bucket {
+    -- The classifier's four-bucket partition (defined authoritatively in
+    -- goal-liveness.allium; restated locally so this spec type-checks alone).
+    ripe | parked | waiting | done
+}
+
+enum VerifierCheck {
+    -- The three checks. Each fires independently; any one firing parks the
+    -- candidate. Mirrors the three earning checks in verify.mjs (E4's verdict).
+    operator_gated |       -- a named secret / explicit gating phrase, unresolved
+    approach_undecided |   -- an explicit unresolved implementation / dep-vetting fork
+    hard_dependency_open   -- a line-scoped "depends on #N" where #N is not done
+}
+
+enum RouteFloor {
+    -- The blast-radius minimum the cited paths/keywords imply. Annotation only:
+    -- a floor never changes whether the candidate passes.
+    inline |     -- default: no cross-cutting surface cited
+    fullteam     -- a cross-cutting path/keyword cited (migration, RLS, spec, ...)
+}
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity Goal {
+    -- The folded goal the verifier reads. Only the fields the verify stage
+    -- needs are modelled; the full goal lives in goal-liveness.allium.
+    id: String
+    bucket: Bucket            -- the classifier's bucket; verifier runs when = ripe
+    done: Boolean             -- a dependency goal's doneness, read via the fold
+    body_hash: String         -- identity of the current issue-body text
+}
+
+entity VerifierResult {
+    -- The verifier's output for one ripe candidate. Created once per ripe goal
+    -- per tick (and again when an edited body forces a re-run).
+    goal: Goal
+    pass: Boolean             -- true iff no check fired
+    fired: Set<VerifierCheck> -- the checks that fired (empty iff pass)
+    route_floor: RouteFloor   -- annotation, independent of pass
+    deps: Set<String>         -- hard-dependency goal ids found in the body
+}
+
+entity VerifierPark {
+    -- The park a fired verifier check appends. Body-keyed: its logical identity
+    -- includes the candidate's body_hash, so a later body edit yields a
+    -- distinct key rather than a mutation, and re-observation supersedes it.
+    goal: Goal
+    body_hash: String         -- the body the park was computed against
+    references_body_observed: Boolean
+    -- true: the unpark disjunct includes body-observed, a producible kind, so
+    -- the park is live by construction (an edited body fires it).
+    stale: goal.body_hash != body_hash
+    -- the goal's body has moved on from the one this park was computed against
+}
+
+entity DependencyDeclaration {
+    -- A dependency edge the verifier surfaced from the body and hands to the
+    -- fold (goal waits on depends_on). The same fact kind the classifier reads.
+    goal: Goal
+    depends_on: String
+}
+
+entity Reobservation {
+    -- The re-read of an edited body that supersedes a stale verifier park and
+    -- forces the verifier to run again against the new text.
+    goal: Goal
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule VerifierParksFailingCandidate {
+    -- The verify stage. A ripe candidate for which at least one check fires is
+    -- parked; it is not dispatchable despite being un-blocked by the fold. The
+    -- hard-dependency check additionally records every open dependency it found
+    -- as a real edge for the fold (deps is non-empty only when that check fired).
+    when: r: VerifierResult.created
+    requires: r.goal.bucket = ripe
+    requires: r.fired != {}
+
+    ensures:
+        r.pass = false
+        -- a body-keyed park, live by construction (clears on body edit)
+        VerifierPark.created(
+            goal: r.goal,
+            body_hash: r.goal.body_hash,
+            references_body_observed: true
+        )
+        for d in r.deps:
+            DependencyDeclaration.created(goal: r.goal, depends_on: d)
+
+    @guidance
+        -- The three checks are operator_gated / approach_undecided /
+        -- hard_dependency_open. Each is a pure predicate over body text (and,
+        -- for the dependency check, the fold's doneness for the referenced
+        -- goal). Any single fire parks; the fired set may hold more than one.
+        -- deps carries only NOT-done referenced goals, so a dependency on a
+        -- done goal neither fires the check nor is re-recorded.
+}
+
+rule PassingCandidateIsDispatchable {
+    -- The complement: no check fired => the candidate passes the verify stage
+    -- and is handed on with its route-floor annotation. Passing is purely the
+    -- absence of a fired check; the route floor does not gate it.
+    when: r: VerifierResult.created
+    requires: r.goal.bucket = ripe
+    requires: r.fired = {}
+
+    ensures:
+        r.pass = true
+
+    @guidance
+        -- route_floor is still computed and attached (inline or fullteam) but
+        -- is advisory: a fullteam floor annotates ceremony, it never blocks.
+}
+
+rule EditedBodyReverifies {
+    -- Liveness by construction. When a parked candidate's body is edited, the
+    -- park goes stale and re-observation supersedes it, re-running the verifier
+    -- against the new text. No operator action and no manual unpark is needed.
+    when: p: VerifierPark.stale
+
+    ensures:
+        Reobservation.created(goal: p.goal)
+
+    @guidance
+        -- The park key embeds the body hash, so a changed body is a NEW park
+        -- key rather than a mutation of the old one; the old park's unpark
+        -- (body-observed) has fired. This is why "edit the body to re-verify"
+        -- works with no explicit unpark command.
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant PassIffNoCheckFired {
+    -- The verifier's definition of dispatchable: a candidate passes exactly
+    -- when no check fired. The route floor is deliberately absent from this
+    -- condition — it annotates, it does not gate.
+    for r in VerifierResults:
+        r.pass = (r.fired = {})
+}
+
+invariant RouteFloorNeverBlocks {
+    -- A fullteam floor raises ceremony but never parks: a candidate with the
+    -- highest floor still passes whenever no check fired.
+    for r in VerifierResults where route_floor = fullteam and fired = {}:
+        r.pass = true
+}
+
+invariant VerifierParkIsLive {
+    -- Every verifier park references body-observed (a producible fact kind), so
+    -- it can in principle fire: an edited body always re-observes. No candidate
+    -- is parked by the verifier on a condition no future fact could satisfy.
+    for p in VerifierParks:
+        p.references_body_observed = true
+}

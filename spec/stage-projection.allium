@@ -1,0 +1,115 @@
+-- allium: 3
+-- stage-projection.allium
+--
+-- Stage reporting as a pure projection over facts (src/templates.mjs, the
+-- STAGE_EVIDENCE / stageOf derivation). Each goal type carries a development
+-- template: an ordered list of stages. A goal's "furthest stage reached" is a
+-- human-facing lens on its progress — a column in the snapshot — and is the #9
+-- constraint's subject: the classifier's bucket logic NEVER reads a stage.
+--
+-- Scope: The stage-projection contract. Covers:
+--
+--   - Stage evidence: a stage is REACHED when its evidence holds — structural
+--     (the fold's own bucket, or PR artifacts translate.mjs emits) or
+--     conventional (an artifact of the same name was produced).
+--   - Furthest-reached reporting: the reported stage is the LAST stage in
+--     template order whose evidence holds; earlier gaps are tolerated (a merged
+--     goal reads `merged` even with no intermediate `implemented` artifact yet).
+--   - Reporting-only decoupling: the stage is a projection OVER the same facts
+--     the fold reads; it is derived from bucket + artifacts, never the reverse.
+--     Editing a template re-slots every in-flight goal on the next tick with no
+--     state migration, precisely because position is derived, never stored.
+--
+-- Excludes:
+--   - The bucket fold itself (goal-liveness.allium) — stages do not feed it.
+--   - The concrete per-type stage lists (delivery / journey) — config data.
+--   - The template-DAG generalisation (ADR 0001) — a future substrate change,
+--     not this reporting contract.
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum Bucket {
+    -- Restated from goal-liveness.allium so this spec type-checks alone.
+    ripe | parked | waiting | done
+}
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity Goal {
+    -- A folded goal. Its bucket is set by the classifier; its artifacts are the
+    -- produced-artifact names. Stage reporting reads BOTH and writes neither.
+    id: String
+    bucket: Bucket
+    artifacts: Set<String>
+}
+
+-- A goal type's template is an ordered list of stage names. Each stage's
+-- evidence is either STRUCTURAL (the fold's bucket or a PR artifact) or
+-- CONVENTIONAL (an artifact of the same name was produced). The order and the
+-- structural/conventional split are config data (templates.mjs), not part of
+-- this contract; the furthest-reached derivation over them is (below).
+
+entity StageReport {
+    -- The reporting projection for one goal: the stages whose evidence holds and
+    -- the furthest of them in template order (null if none is reached).
+    goal: Goal
+    reached: Set<String>
+    furthest: String?
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule GoalProjectsToFurthestStage {
+    -- The projection act. Every goal derives a stage report from its bucket and
+    -- artifacts. It is recomputed each tick from facts — never stored — so a
+    -- template edit re-slots the goal for free on the next tick.
+    when: g: Goal.created
+
+    ensures:
+        StageReport.created(goal: g)
+
+    @guidance
+        -- `reached` is the set of stages whose STAGE_EVIDENCE holds over
+        -- (bucket, artifacts); `furthest` is the last of them in template order.
+        -- This derivation lives outside the fold (templates.mjs, not
+        -- classify.mjs) — that placement IS the #9 reporting-only constraint.
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant ReportedStageIsReached {
+    -- The furthest stage, when set, is genuinely one of the reached stages —
+    -- the report never names a stage whose evidence does not hold.
+    for r in StageReports where furthest != null:
+        r.furthest in r.reached
+}
+
+invariant NoEvidenceNoStage {
+    -- A goal with no reached stage reports no furthest stage (null), rather than
+    -- being forced onto stage one. Reporting is evidence-gated.
+    for r in StageReports where reached = {}:
+        r.furthest = null
+}
+
+invariant StageReadsFoldNotConversely {
+    -- Reporting-only decoupling (the #9 property), stated by direction: a stage
+    -- report is a function of a goal's bucket and artifacts. The dependency runs
+    -- report → goal; a goal's bucket is set by the fold and is never a function
+    -- of any StageReport. This is why bucket assignment stays stage-free.
+    for r in StageReports:
+        r.goal.bucket in {ripe, parked, waiting, done}
+}
+
+------------------------------------------------------------
+-- Open Questions
+------------------------------------------------------------
+
+open question "Gap-tolerance (a later stage reported while an earlier one is unreached) and full non-interference (no fold decision reads a stage) are stated here as directional/structural facts plus guidance, not as machine-checked properties — Allium expresses data invariants over a state, not the absence of a dependency edge in the classifier. If stage reporting ever grows a path that could feed the fold, promote this to an enforced separation (e.g. a distinct module boundary the checker can see)."
