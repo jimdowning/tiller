@@ -1,26 +1,27 @@
 # Tiller
 
-**Tiller answers one question, continuously and honestly: _what should be worked on next, and for everything that isn't ready — exactly why not, and what would change that?_**
+**Tiller makes human attention scarce on purpose.** It spends a person's judgement only where a decision genuinely needs one — and surfaces that decision at the earliest, cheapest point to act on it. Everything mechanical, it derives deterministically from your issues, so no one spends attention keeping a plan honest, babysitting an agent session, or rubber-stamping a PR that was already too far gone to really question.
 
-It reads a repository's open issues, folds them into a single derived plan, and tells you which pieces of work are ready to start right now. Nothing is hand-maintained; the plan falls out of the facts. Tiller is read-only, deterministic, and has zero runtime dependencies.
+It reads a repository's open issues, folds them into a single derived plan, applies the quality bars each kind of work has to clear _before_ it's dispatched, and surfaces the handful of things that actually need a human. Nothing is hand-maintained; the plan falls out of the facts. Tiller is read-only, deterministic, and has zero runtime dependencies.
 
-> **Status: preliminary.** The engine senses, classifies, and produces a derived plan on every tick. It does **not** yet dispatch work — it tells you what's ready; a human or an agent still picks it up. See [Current status & limitations](docs/architecture.md#current-status--limitations).
+> **Status: preliminary — the deterministic substrate, not yet the whole loop.** The engine senses, classifies, gates, and snapshots on every tick. It does **not** dispatch work, run sessions, or touch PRs — those outcomes are delivered by the coordinating system tiller _feeds_ (conditioning, supervision, implementation). What the engine gives that system is a trustworthy, always-current answer to _what's ready, what's blocked and why, and what needs a person._ See [Current status & limitations](docs/architecture.md#current-status--limitations).
 
 ---
 
 ## Why tiller exists
 
-If you coordinate a large backlog — especially one worked by a mix of humans and autonomous agents — you hit the same problems:
+If you coordinate a large backlog — especially one worked by a mix of humans and autonomous agents — human attention is the bottleneck, and it leaks in three places:
 
-- **"What's actually ready?"** has no cheap answer. An issue can look ready and not be: it depends on unfinished work, it's waiting on a decision only a person can make, its spec isn't settled, or it's embargoed until a date. Working that out by hand, repeatedly, across a hundred issues, is the coordination tax.
-- **Milestones and status columns drift.** They're a second, hand-maintained source of truth that quietly disagrees with reality. Someone has to keep them honest, and nobody does.
-- **Agents pick up work that isn't ready.** An autonomous session that grabs a not-actually-startable issue burns tokens, produces half-work, and creates cleanup. The cost of a bad "what's next" answer is paid downstream, at scale.
-- **"Why isn't this moving?"** is expensive to answer. When a piece of work stalls, reconstructing _why_ — and what would unblock it — means re-reading threads and reverse-engineering intent.
+- **Quality caught late is quality rubber-stamped.** When the first real check on a piece of work is PR review, it's already too late to push back cheaply — so, in practice, you don't. Tiller's **gates** move the questions that decide whether work is worth doing well — is it shaped? is its value clear? does it fit the architecture? — _upstream_ to conditioning time, where acting on the answer is a label edit rather than a discarded branch. A new gate can even start in **shadow mode**, reporting what it _would_ block before it binds, so you can see a quality bar's effect before it costs anyone anything.
+- **Mechanical work-management eats human attention.** _"What's actually ready?"_ has no cheap answer done by hand: an issue can look ready and not be — it depends on unfinished work, waits on a decision only a person can make, its spec isn't settled, or it's embargoed until a date. _"Why isn't this moving?"_ means re-reading threads to reverse-engineer intent. And milestones and status columns are a second, hand-maintained source of truth that quietly drifts from reality — someone has to keep them honest, and nobody does. All of it is _derivable_; none of it is worth a person's time. Tiller derives it.
+- **A bad "what's next" answer is paid downstream, at scale.** An autonomous session that grabs a not-actually-startable issue burns tokens, produces half-work, and creates cleanup — and a human ends up babysitting the session to catch it. Getting readiness right before dispatch is what lets work run without someone watching it.
 
-Tiller exists to make that answer **cheap, current, and trustworthy**. You keep working in GitHub issues as normal; tiller derives the plan from them so you never maintain it, and it derives it the same way every time so you can trust it.
+Tiller exists to make those answers **cheap, current, and trustworthy** — so a person's attention is spent only on the decisions that genuinely need it. You keep working in GitHub issues as normal; tiller derives the plan from them so you never maintain it, and it derives it the same way every time so you can trust it.
 
 ## What you get
 
+- **Quality bars enforced before dispatch.** Each kind of work has to clear the **gates** that _its kind_ needs — spec clean, value clear, alternatives considered, architecture fit, operator approved — before it's ever treated as ready. The quality conversation happens upstream, once, where it's cheap; not at PR review, where it's expensive and usually too late. Gates can run in **shadow mode** first, so you see a bar's effect before it binds.
+- **Attention rationed to what needs a human.** An operator stamps (`attest`) only the gates that genuinely require judgement; everything mechanical is derived. Blocked work that has waited too long is surfaced as **attention** the moment it crosses its deadline — so the few things that need a person find you, instead of you hunting for them.
 - **One always-current plan.** Every issue lands in exactly one bucket — **ready to start**, **blocked**, **waiting on its children**, or **done** — with no gaps and no double-counting. Run a tick and you have today's picture.
 - **A reason for every "not yet."** Nothing is blocked silently. Each blocked issue carries _every_ reason it's blocked and the specific event that would clear each one — a label, a dependency closing, an operator's stamp, a date arriving. Ask `explain <issue>` and get the exact list.
 - **No hand-maintained state.** No milestones to curate, no status columns to drag. Membership and dependencies are _declared_ in issue bodies; the plan is derived. Editing an issue re-derives its place on the next tick, for free.
@@ -61,17 +62,22 @@ A tick writes a dated snapshot — the derived plan in human-readable form. An a
   - untracked-dependency — clears when: a tracking issue appears, or the deadline surfaces it
 ```
 
-Read that top to bottom: one issue is ready to dispatch; one just ripened and is being briefly held to confirm it's stable; one blocked issue has sat too long and is escalated for attention; the rest are blocked, each with its reasons and what would unblock them. That whole picture is _derived_ from the issues — nobody wrote it.
+The **Attention** section is the part that costs a person anything: one blocked issue has sat past its deadline, so it's surfaced for a human to look at — the other 120 parked issues make no claim on anyone's attention until something changes. The rest is the mechanical byproduct: one issue is ready to dispatch; one just ripened and is being briefly held to confirm it's stable; the parked ones each carry their reasons and what would unblock them. That whole picture is _derived_ from the issues — nobody wrote it.
 
 ## How it works
 
-Every **tick** runs the same five-stage pipeline. Each stage does one job:
+Every **tick** runs the same five-stage pipeline, which is really two moves.
+
+**Derive the plan** — turn the repo's reality into buckets, mechanically:
 
 1. **Sense** — fetch the open issues, their timelines, comments, and bodies from GitHub (read-only).
 2. **Store** — translate what it saw into **facts** and append them to a log. Facts are never edited or deleted; a later fact can _contradict_ an earlier one, but the history stays. This is what makes ticks replayable.
 3. **Classify** — a pure function folds the whole fact log so that every issue lands in **exactly one** bucket: `ripe` (ready), `parked` (blocked), `waiting` (a parent whose children aren't done), or `done`.
-4. **Verify & gate** — before a `ripe` issue is treated as dispatchable, a thin verifier and a set of **situational gates** check the prerequisites that _this kind_ of work needs (e.g. a spec is clean, an operator has approved). New gates start in **shadow mode**: they report what they _would_ block without blocking anything, so a rule's effect is observable before it binds.
-5. **Snapshot** — write the derived plan to `.tiller/snapshots/<date>.md` (and `.json`). A short **hysteresis** step damps flicker so a rapidly-toggling issue doesn't churn the plan.
+
+**Left-shift quality and ration attention** — decide what's actually fit to start, and what needs a person:
+
+4. **Verify & gate** — before a `ripe` issue is treated as dispatchable, a thin verifier and a set of **situational gates** check the prerequisites that _this kind_ of work needs (e.g. a spec is clean, an operator has approved). This is where quality moves upstream: a bar that would otherwise be discovered at PR review is enforced before dispatch. New gates start in **shadow mode** — they report what they _would_ block without blocking anything, so a rule's effect is observable before it binds.
+5. **Snapshot** — write the derived plan to `.tiller/snapshots/<date>.md` (and `.json`), surfacing what's ready, what's blocked and why, and what has waited long enough to need a human. A short **hysteresis** step damps flicker so a rapidly-toggling issue doesn't churn the plan.
 
 The result is a plan you can trust the same way twice. The concepts in bold — facts, buckets, gates, hysteresis — are the whole mental model; [**Concepts**](docs/concepts.md) explains each one and _why_ it's shaped that way.
 
