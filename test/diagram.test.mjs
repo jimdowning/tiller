@@ -132,3 +132,20 @@ test('currentSection: returns null when markers are absent', () => {
 test('replaceSection: throws with guidance when markers are missing', () => {
   assert.throws(() => replaceSection('# no markers', 'BODY'), /markers not found/i);
 });
+
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { resolve, dirname } from 'node:path';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+test('CLI: default mode prints a mermaid section wrapped in markers', () => {
+  const out = execFileSync('node', ['src/diagram.mjs'], {
+    cwd: ROOT, encoding: 'utf8',
+    env: { ...process.env, TILLER_CONFIG: './tiller.config.mjs' },
+  });
+  assert.ok(out.includes(START));
+  assert.ok(out.includes(END));
+  assert.ok(out.includes('### delivery'));
+  assert.ok(out.includes('graph LR'));
+});

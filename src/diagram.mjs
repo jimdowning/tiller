@@ -12,6 +12,10 @@
 // populated from the linear `stages` list + `GATES`; when a goal type carries
 // explicit nodes-with-predecessors, only this adapter changes.
 
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 // Goal-type render order: delivery first, then remaining types in object order.
 const GOAL_TYPE_ORDER = ['delivery'];
 
@@ -152,4 +156,37 @@ export function replaceSection(readme, body) {
   const before = readme.slice(0, r.si + START.length);
   const after = readme.slice(r.ei);
   return `${before}\n${body}\n${after}`;
+}
+
+// --- CLI --------------------------------------------------------------------
+
+export async function main(argv) {
+  const { DELIVERY_TEMPLATE, GATES } = await import('./config.mjs');
+  const { GOAL_TYPES } = await import('./templates.mjs');
+  const workflows = buildWorkflows({
+    goalTypes: GOAL_TYPES, deliveryTemplate: DELIVERY_TEMPLATE, gates: GATES,
+  });
+  const body = renderSection(workflows);
+
+  const mode = argv[0];
+  if (mode === '--write' || mode === '--check') {
+    const path = resolve(argv[1] ?? 'README.md');
+    const readme = readFileSync(path, 'utf8');
+    if (mode === '--check') {
+      if (isInSync(readme, body)) { console.log('workflow diagrams in sync'); return 0; }
+      console.error('README workflow diagrams are STALE — run: node src/diagram.mjs --write README.md');
+      return 1;
+    }
+    const next = replaceSection(readme, body);
+    if (next === readme) { console.log(`${path} already in sync`); return 0; }
+    writeFileSync(path, next);
+    console.log(`updated ${path}`);
+    return 0;
+  }
+  console.log(`${START}\n${body}\n${END}`);
+  return 0;
+}
+
+if (pathToFileURL(process.argv[1] ?? '').href === import.meta.url) {
+  main(process.argv.slice(2)).then((code) => process.exit(code ?? 0));
 }
