@@ -119,3 +119,37 @@ export function renderSection(workflows) {
   while (L.length && L[L.length - 1] === '') L.pop();
   return L.join('\n');
 }
+
+// --- README section (marker-fenced, idempotent) -----------------------------
+
+export const START = '<!-- tiller:workflows:start -->';
+export const END = '<!-- tiller:workflows:end -->';
+
+function region(readme) {
+  const si = readme.indexOf(START);
+  const ei = readme.indexOf(END);
+  if (si === -1 || ei === -1 || ei < si) return null;
+  return { si, ei };
+}
+
+export function currentSection(readme) {
+  const r = region(readme);
+  return r ? readme.slice(r.si + START.length, r.ei) : null;
+}
+
+export function isInSync(readme, body) {
+  return currentSection(readme) === `\n${body}\n`;
+}
+
+export function replaceSection(readme, body) {
+  const r = region(readme);
+  if (!r) {
+    throw new Error(
+      `README markers not found. Add a "## Workflows" section containing exactly:\n` +
+      `${START}\n${END}\nthen re-run --write.`,
+    );
+  }
+  const before = readme.slice(0, r.si + START.length);
+  const after = readme.slice(r.ei);
+  return `${before}\n${body}\n${after}`;
+}

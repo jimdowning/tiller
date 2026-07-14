@@ -102,3 +102,33 @@ test('renderSection: one subheading per goal type, delivery first, trimmed', () 
   assert.ok(section.includes('### review\n'));
   assert.ok(!section.endsWith('\n'));
 });
+
+import { replaceSection, currentSection, isInSync, START, END } from '../src/diagram.mjs';
+
+const README = `# Title\n\nintro\n\n## Workflows\n\npreamble\n\n${START}\nOLD\n${END}\n\n## Next\n`;
+
+test('replaceSection: replaces only between markers, preserves surrounding prose', () => {
+  const out = replaceSection(README, 'NEW BODY');
+  assert.ok(out.includes(`${START}\nNEW BODY\n${END}`));
+  assert.ok(out.startsWith('# Title\n'));
+  assert.ok(out.includes('## Next'));
+  assert.ok(!out.includes('OLD'));
+});
+
+test('replaceSection then isInSync is clean; second replace is a no-op', () => {
+  const once = replaceSection(README, 'BODY');
+  assert.ok(isInSync(once, 'BODY'));
+  assert.equal(replaceSection(once, 'BODY'), once);
+});
+
+test('isInSync: false when the section body differs', () => {
+  assert.equal(isInSync(README, 'BODY'), false);
+});
+
+test('currentSection: returns null when markers are absent', () => {
+  assert.equal(currentSection('# no markers here'), null);
+});
+
+test('replaceSection: throws with guidance when markers are missing', () => {
+  assert.throws(() => replaceSection('# no markers', 'BODY'), /markers not found/i);
+});
