@@ -163,6 +163,49 @@ the classifier contract, vendored from the E2 experiment artifact
 in strengthsys) and now the living contract for this repo: a classifier/fold
 change is expected to update it (the `classifier-spec-sync` gate).
 
+## Workflows
+
+Each goal type is a **workflow**: an ordered set of stages plus the situational
+gates that guard progression to `ripe`. Diagrams below are generated from the
+active config (`tiller.config.mjs`) by `node src/diagram.mjs` — do not edit
+between the markers by hand; CI (`--check`) fails if they drift.
+
+<!-- tiller:workflows:start -->
+### delivery
+
+```mermaid
+graph LR
+  classDef gate fill:#fff,stroke:#999,stroke-dasharray:4 3;
+  classDef enforce stroke:#c00,stroke-width:2px;
+  s_shaped("shaped")
+  s_ripe("ripe")
+  s_pr_open("pr-open")
+  s_merged("merged")
+  s_shaped -->|requires label 'shaped'| s_ripe
+  s_ripe --> s_pr_open
+  s_pr_open --> s_merged
+  g_classifier_fuzz{{"classifier-fuzz<br/>when cites src/(classify|schema).mjs<br/>sensor · fuzz-run · shadow"}}
+  g_classifier_fuzz -.gate.-> s_ripe
+  class g_classifier_fuzz gate
+  g_classifier_spec_sync{{"classifier-spec-sync<br/>when cites src/(classify|schema).mjs<br/>operator · spec-sync · shadow"}}
+  g_classifier_spec_sync -.gate.-> s_ripe
+  class g_classifier_spec_sync gate
+```
+
+### journey
+
+```mermaid
+graph LR
+  classDef gate fill:#fff,stroke:#999,stroke-dasharray:4 3;
+  classDef enforce stroke:#c00,stroke-width:2px;
+  s_elaborated("elaborated")
+  s_children_done("children-done")
+  s_closed("closed")
+  s_elaborated --> s_children_done
+  s_children_done --> s_closed
+```
+<!-- tiller:workflows:end -->
+
 ## Situational gates (shadow-first)
 
 `engine.config.mjs` declares gates as `(situation predicate) → required

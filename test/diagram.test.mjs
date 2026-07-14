@@ -149,3 +149,13 @@ test('CLI: default mode prints a mermaid section wrapped in markers', () => {
   assert.ok(out.includes('### delivery'));
   assert.ok(out.includes('graph LR'));
 });
+
+test('CLI: --check on this repo README exits 0 (kept in sync)', () => {
+  let code = 0;
+  try {
+    execFileSync('node', ['src/diagram.mjs', '--check', 'README.md'], {
+      cwd: ROOT, env: { ...process.env, TILLER_CONFIG: './tiller.config.mjs' }, stdio: 'pipe',
+    });
+  } catch (e) { code = e.status; }
+  assert.equal(code, 0);
+});
