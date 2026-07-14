@@ -15,9 +15,10 @@
 --     not-really-startable shape.
 --   - The route-floor annotation: a blast-radius minimum derived from the cited
 --     paths/keywords that ANNOTATES the dispatch route and never blocks.
---   - Body-keyed liveness: a verifier park's identity includes the body hash, so
+--   - Body-keyed liveness: a verifier park's unpark includes body_observed, so
 --     an edited body re-observes and the verifier re-runs against the new text —
---     the park clears itself, no manual unpark.
+--     the park clears itself. This is the body-keyed specialization of the
+--     shared t/LiveUnpark invariant.
 --   - The dependency-recording side effect: a hard dependency the verifier finds
 --     in the body is also emitted as a dependency-declared fact, since it is a
 --     real edge the comment-sensing may have missed.
@@ -28,16 +29,13 @@
 --     the domain fact is "a named external prerequisite is present, unresolved".
 --   - The classifier fold that produces the ripe candidates (goal-liveness.allium).
 --   - Situational validity gates (gates.allium) — a separate, verdict-driven layer.
+--   - Park-liveness, now the shared t/LiveUnpark (tiller.allium).
+
+use "./tiller.allium" as t
 
 ------------------------------------------------------------
 -- Enumerations
 ------------------------------------------------------------
-
-enum Bucket {
-    -- The classifier's four-bucket partition (defined authoritatively in
-    -- goal-liveness.allium; restated locally so this spec type-checks alone).
-    ripe | parked | waiting | done
-}
 
 enum VerifierCheck {
     -- The three checks. Each fires independently; any one firing parks the
@@ -62,7 +60,7 @@ entity Goal {
     -- The folded goal the verifier reads. Only the fields the verify stage
     -- needs are modelled; the full goal lives in goal-liveness.allium.
     id: String
-    bucket: Bucket            -- the classifier's bucket; verifier runs when = ripe
+    bucket: t/Bucket          -- the classifier's bucket; verifier runs when = ripe
     done: Boolean             -- a dependency goal's doneness, read via the fold
     body_hash: String         -- identity of the current issue-body text
 }
@@ -77,30 +75,11 @@ entity VerifierResult {
     deps: Set<String>         -- hard-dependency goal ids found in the body
 }
 
-entity VerifierPark {
-    -- The park a fired verifier check appends. Body-keyed: its logical identity
-    -- includes the candidate's body_hash, so a later body edit yields a
-    -- distinct key rather than a mutation, and re-observation supersedes it.
-    goal: Goal
-    body_hash: String         -- the body the park was computed against
-    references_body_observed: Boolean
-    -- true: the unpark disjunct includes body-observed, a producible kind, so
-    -- the park is live by construction (an edited body fires it).
-    stale: goal.body_hash != body_hash
-    -- the goal's body has moved on from the one this park was computed against
-}
-
 entity DependencyDeclaration {
     -- A dependency edge the verifier surfaced from the body and hands to the
     -- fold (goal waits on depends_on). The same fact kind the classifier reads.
     goal: Goal
     depends_on: String
-}
-
-entity Reobservation {
-    -- The re-read of an edited body that supersedes a stale verifier park and
-    -- forces the verifier to run again against the new text.
-    goal: Goal
 }
 
 ------------------------------------------------------------
@@ -113,16 +92,19 @@ rule VerifierParksFailingCandidate {
     -- hard-dependency check additionally records every open dependency it found
     -- as a real edge for the fold (deps is non-empty only when that check fired).
     when: r: VerifierResult.created
-    requires: r.goal.bucket = ripe
+    requires: r.goal.bucket = t/ripe
     requires: r.fired != {}
 
     ensures:
         r.pass = false
-        -- a body-keyed park, live by construction (clears on body edit)
-        VerifierPark.created(
-            goal: r.goal,
-            body_hash: r.goal.body_hash,
-            references_body_observed: true
+        -- a park whose unpark includes body_observed: live by t/LiveUnpark, and
+        -- body-keyed, so an edited body re-observes and re-verifies with no
+        -- manual unpark. (The park key embeds the body hash, so a changed body
+        -- is a new park rather than a mutation of the old one.)
+        t/Park.created(
+            goal: r.goal.id,
+            reason: "verifier",
+            unpark: {t/body_observed, t/operator_response, t/timeout}
         )
         for d in r.deps:
             DependencyDeclaration.created(goal: r.goal, depends_on: d)
@@ -141,7 +123,7 @@ rule PassingCandidateIsDispatchable {
     -- and is handed on with its route-floor annotation. Passing is purely the
     -- absence of a fired check; the route floor does not gate it.
     when: r: VerifierResult.created
-    requires: r.goal.bucket = ripe
+    requires: r.goal.bucket = t/ripe
     requires: r.fired = {}
 
     ensures:
@@ -150,22 +132,6 @@ rule PassingCandidateIsDispatchable {
     @guidance
         -- route_floor is still computed and attached (inline or fullteam) but
         -- is advisory: a fullteam floor annotates ceremony, it never blocks.
-}
-
-rule EditedBodyReverifies {
-    -- Liveness by construction. When a parked candidate's body is edited, the
-    -- park goes stale and re-observation supersedes it, re-running the verifier
-    -- against the new text. No operator action and no manual unpark is needed.
-    when: p: VerifierPark.stale
-
-    ensures:
-        Reobservation.created(goal: p.goal)
-
-    @guidance
-        -- The park key embeds the body hash, so a changed body is a NEW park
-        -- key rather than a mutation of the old one; the old park's unpark
-        -- (body-observed) has fired. This is why "edit the body to re-verify"
-        -- works with no explicit unpark command.
 }
 
 ------------------------------------------------------------
@@ -185,12 +151,4 @@ invariant RouteFloorNeverBlocks {
     -- highest floor still passes whenever no check fired.
     for r in VerifierResults where route_floor = fullteam and fired = {}:
         r.pass = true
-}
-
-invariant VerifierParkIsLive {
-    -- Every verifier park references body-observed (a producible fact kind), so
-    -- it can in principle fire: an edited body always re-observes. No candidate
-    -- is parked by the verifier on a condition no future fact could satisfy.
-    for p in VerifierParks:
-        p.references_body_observed = true
 }

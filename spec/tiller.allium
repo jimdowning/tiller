@@ -1,0 +1,94 @@
+-- allium: 3
+-- tiller.allium
+--
+-- Root module: the vocabulary shared across the engine's behavioral contracts.
+-- Factored out of the per-subsystem specs so a cross-cutting concept is stated
+-- ONCE and referenced (`use "./tiller.allium" as t`) rather than restated per
+-- file. Mirrors the strengthsys `strengthsys.allium` root-module pattern.
+--
+-- Scope: Shared enums + the park-liveness contract. Covers:
+--
+--   - Bucket: the classifier's four-way partition, referenced by every spec that
+--     talks about a goal's classified state (verifier, gates, stage-projection).
+--   - ProducibleFactKind: the fact kinds some method / heartbeat emitter /
+--     scheduler clock can APPEND in the future (mirrors PRODUCIBLE_FACT_KINDS in
+--     src/schema.mjs). An unpark is "live" iff it references at least one.
+--   - Park + LiveUnpark: the single statement of liveness-by-construction that
+--     the verifier and the gates both rely on — every park references at least
+--     one producible fact kind, so it can in principle fire. Previously this was
+--     re-derived in each subsystem under a different boolean name
+--     (references_body_observed / references_passing_verdict); it now lives here.
+--
+-- Excludes:
+--   - The classifier's richer dead-unpark model. goal-liveness.allium keeps its
+--     own UnparkPredicate (producible kinds vs absence sentinels, plus the
+--     ManufactureTimeout REPAIR of a dead predicate) because it is the one place
+--     that models an unpark that can be MALFORMED and needs repairing. This root
+--     models only the always-live park the downstream stages emit. Unifying the
+--     two is deferred to the goal-liveness relocation (#14).
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum Bucket {
+    -- The classifier's total partition (goal-liveness.allium is the authoritative
+    -- source; this is the shared handle the projection specs compare against).
+    ripe |     -- deps satisfied, not parked, not done: actionable now
+    parked |   -- blocked; carries an unpark predicate over future facts
+    waiting |  -- an active dependency on a not-done goal
+    done       -- the goal predicate holds (a fact), until contradicted
+}
+
+enum ProducibleFactKind {
+    -- Fact kinds that some declared method, heartbeat emitter, or the
+    -- scheduler's timeout/date clock can APPEND in the future. Mirrors
+    -- PRODUCIBLE_FACT_KINDS in src/schema.mjs. An unpark predicate is "live"
+    -- iff it references at least one of these.
+    goal_formed |
+    dependency_declared |
+    artifact_produced |
+    validity_verdict |
+    goal_done |
+    attempt |
+    park |
+    unpark |
+    budget_exhausted |
+    heartbeat |
+    operator_response |
+    timeout |
+    date_reached |
+    body_observed |
+    capability_asserted |
+    capability_revoked |
+    contradiction
+}
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity Park {
+    -- A block on a goal, carrying the fact kinds whose appearance would clear
+    -- it. Emitted by the classifier and by the downstream veto stages
+    -- (verifier, gates). `unpark` is typed to producible kinds, so a non-empty
+    -- unpark IS the liveness guarantee (a park referencing no producible kind is
+    -- unrepresentable here — see the header note on goal-liveness's richer model).
+    goal: String
+    reason: String
+    unpark: Set<ProducibleFactKind>
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant LiveUnpark {
+    -- Liveness by construction, stated once for the whole engine. Every park
+    -- references at least one producible fact kind, so it can in principle fire:
+    -- no goal is ever parked on a condition no future fact could satisfy. The
+    -- verifier (body_observed) and the gates (validity_verdict) each satisfy
+    -- this by the unpark set they emit.
+    for p in Parks:
+        p.unpark != {}
+}

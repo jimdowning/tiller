@@ -26,14 +26,7 @@
 --   - The template-DAG generalisation (ADR 0001) — a future substrate change,
 --     not this reporting contract.
 
-------------------------------------------------------------
--- Enumerations
-------------------------------------------------------------
-
-enum Bucket {
-    -- Restated from goal-liveness.allium so this spec type-checks alone.
-    ripe | parked | waiting | done
-}
+use "./tiller.allium" as t
 
 ------------------------------------------------------------
 -- Entities
@@ -43,7 +36,7 @@ entity Goal {
     -- A folded goal. Its bucket is set by the classifier; its artifacts are the
     -- produced-artifact names. Stage reporting reads BOTH and writes neither.
     id: String
-    bucket: Bucket
+    bucket: t/Bucket
     artifacts: Set<String>
 }
 
@@ -105,7 +98,7 @@ invariant StageReadsFoldNotConversely {
     -- report → goal; a goal's bucket is set by the fold and is never a function
     -- of any StageReport. This is why bucket assignment stays stage-free.
     for r in StageReports:
-        r.goal.bucket in {ripe, parked, waiting, done}
+        r.goal.bucket in {t/ripe, t/parked, t/waiting, t/done}
 }
 
 ------------------------------------------------------------
