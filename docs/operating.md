@@ -27,6 +27,7 @@ senses its own backlog; to sense another repo, prefix with `TILLER_CONFIG=...`
 | `node src/explain.mjs <n>` | why isn't `#n` ripe, and exactly what would clear each of its parks |
 | `node src/next.mjs` | capability-matched selection: what can **this** session pick up right now, given the tools it has? (`--as operator`, `--capabilities gh,pnpm`, `--all` to show skipped-and-why) |
 | `node src/attest.mjs <n> <gate> pass` | record an **operator** verdict stamp for a gate (e.g. `attest.mjs 10 journey-articulation pass`) |
+| `node src/heartbeat.mjs <source>` | append a liveness pulse from a `/loop`-wrapped stream (`source` = a goal number, which fires that goal's `budget-exhausted` unpark, or a stream name) |
 | `node src/migrate.mjs` | read-only milestones → journeys migration plan |
 | `node src/diagram.mjs` | render the workflow diagrams from the active config (`--write README.md` to update, `--check README.md` to fail on drift) |
 
