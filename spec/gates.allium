@@ -19,9 +19,9 @@
 --   - Shadow vs enforce: a gate in shadow mode REPORTS what it would park and
 --     blocks nothing; only an enforce-mode gate appends a park fact. New gates
 --     start in shadow so their effect is observable before it binds.
---   - Qualified-unpark liveness: an enforce park's unpark is
---     `validity-verdict:<artifact>` — which only a PASSING verdict fires — plus
---     operator-response, both producible, so the park is live by construction.
+--   - Park-liveness: an enforce park's unpark is {validity_verdict,
+--     operator_response} — both producible, so it is live by the shared
+--     t/LiveUnpark. Only a PASSING verdict fires the validity_verdict disjunct.
 --
 -- Excludes:
 --   - Who PRODUCES a verdict and how (CI runs, allium checks, attest.mjs). The
@@ -29,15 +29,13 @@
 --   - The pure fold (goal-liveness.allium) and the thin verifier (verifier.allium).
 --   - The concrete gate catalogue (spec-check-clean, journey-articulation, the
 --     *-spec-sync family) — those are config data, not the contract.
+--   - Park-liveness, now the shared t/LiveUnpark (tiller.allium).
+
+use "./tiller.allium" as t
 
 ------------------------------------------------------------
 -- Enumerations
 ------------------------------------------------------------
-
-enum Bucket {
-    -- Restated from goal-liveness.allium so this spec type-checks alone.
-    ripe | parked | waiting | done
-}
 
 enum Authority {
     -- The three authority classes every validity verdict carries. A gate names
@@ -64,7 +62,7 @@ enum Verdict {
 entity Goal {
     -- The live goal a gate is evaluated over. Gates skip done and external goals.
     id: String
-    bucket: Bucket
+    bucket: t/Bucket
     goal_type: String
     is_external: Boolean
 }
@@ -90,8 +88,9 @@ entity ValidityVerdict {
 
 entity GateEvaluation {
     -- One (gate, goal) evaluation this tick. `applies` is the situation match;
-    -- `verdict` is the latest applicable verdict, if any. Met and would-park are
-    -- derived so the authority/pass rule is stated once, structurally.
+    -- `verdict` is the latest applicable verdict, if any. Met, would-park and
+    -- parks are derived so the authority rule and the shadow/enforce rule are
+    -- each stated once, structurally.
     gate: Gate
     goal: Goal
     applies: Boolean
@@ -99,16 +98,8 @@ entity GateEvaluation {
     met: applies and verdict != null and verdict.verdict = pass
          and verdict.source = gate.required_source
     would_park: applies and not met
-}
-
-entity GatePark {
-    -- The park an enforce-mode gate appends when it would park. Its unpark is
-    -- qualified to a PASSING verdict (only a pass fires it) plus operator-response.
-    goal: Goal
-    gate: Gate
-    references_passing_verdict: Boolean
-    -- true: unpark disjunct `validity-verdict:<artifact>` is producible and only
-    -- a passing verdict satisfies it (see disjunctFires in gates.mjs).
+    -- what a SHADOW gate reports; what an ENFORCE gate actually appends:
+    parks: would_park and gate.mode = enforce
 }
 
 ------------------------------------------------------------
@@ -116,39 +107,25 @@ entity GatePark {
 ------------------------------------------------------------
 
 rule EnforceGateParks {
-    -- Only an enforce-mode gate that would park appends a park fact. Shadow-mode
-    -- gates have no such rule: they report and append nothing (see
-    -- ShadowGateBindsNothing). The park is live by construction — its unpark
+    -- Only an enforce-mode gate that would park appends a park fact — `parks`
+    -- folds both conditions. A shadow gate has parks = false, so it reports and
+    -- appends nothing. The park is live by the shared t/LiveUnpark: its unpark
     -- references a producible passing verdict.
-    when: e: GateEvaluation.would_park
-    requires: e.gate.mode = enforce
+    when: e: GateEvaluation.parks
 
     ensures:
-        GatePark.created(
-            goal: e.goal,
-            gate: e.gate,
-            references_passing_verdict: true
+        t/Park.created(
+            goal: e.goal.id,
+            reason: "gate",
+            unpark: {t/validity_verdict, t/operator_response}
         )
 
     @guidance
-        -- would_park = applies and not met. `met` already encodes the
-        -- authority contract: an agent-sourced pass on an operator-authority
-        -- gate leaves met = false, so the gate would park.
-}
-
-rule GateMetByAuthoritativePass {
-    -- A gate is satisfied exactly when a passing verdict for its artifact, from
-    -- its required authority, is the latest verdict. Recording such a verdict
-    -- clears the gate's would-park.
-    when: e: GateEvaluation.met
-
-    ensures:
-        e.would_park = false
-
-    @guidance
-        -- The three authority classes are not interchangeable: a sensor pass
-        -- does not satisfy an operator gate. `met` pins source = required_source,
-        -- so authority is part of the satisfaction condition, not advisory.
+        -- `met` already encodes the authority contract: an agent-sourced pass on
+        -- an operator-authority gate leaves met = false, so would_park (and,
+        -- under enforce, parks) is true. Recording an authoritative passing
+        -- verdict flips met to true, so parks becomes false — the gate clears.
+        -- Only a PASSING verdict fires the validity_verdict unpark disjunct.
 }
 
 ------------------------------------------------------------
@@ -156,19 +133,11 @@ rule GateMetByAuthoritativePass {
 ------------------------------------------------------------
 
 invariant ShadowGateBindsNothing {
-    -- The safety property behind shadow-first rollout: a park is only ever
-    -- produced by an enforce-mode gate. A shadow gate observes and reports; it
-    -- never blocks, so a fresh gate cannot freeze the backlog on day one.
-    for p in GateParks:
-        p.gate.mode = enforce
-}
-
-invariant GateParkIsLive {
-    -- Every gate park references a producible passing verdict (plus
-    -- operator-response), so it can in principle clear — no goal is gate-parked
-    -- on a condition no future fact could satisfy.
-    for p in GateParks:
-        p.references_passing_verdict = true
+    -- The safety property behind shadow-first rollout: a shadow gate never
+    -- parks, whatever it would report. A fresh gate therefore cannot freeze the
+    -- backlog on day one; its effect is observable (would_park) before it binds.
+    for e in GateEvaluations where gate.mode = shadow:
+        e.parks = false
 }
 
 invariant OnlyAuthoritativePassMeets {
@@ -182,7 +151,8 @@ invariant OnlyAuthoritativePassMeets {
 
 invariant InapplicableGateNeverParks {
     -- A gate binds only in the situation that makes its prework necessary. A
-    -- gate that does not apply to a goal never contributes a would-park for it.
+    -- gate that does not apply to a goal never parks it (applies = false forces
+    -- would_park, and hence parks, to false).
     for e in GateEvaluations where applies = false:
-        e.would_park = false
+        e.parks = false
 }

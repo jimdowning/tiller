@@ -73,10 +73,12 @@ entity ExternalRef {
 entity BodyEdge {
     -- A body-declared dependency edge (task-list `- [ ] #N` / `Part of #N`).
     -- When a body no longer declares an edge that the log still carries, the
-    -- edge is descoped by CONTRADICTION, not deletion.
+    -- edge is descoped by CONTRADICTION, not deletion: `retired_by_contradiction`
+    -- records the append-only retirement — the original edge fact survives.
     goal: String
     depends_on: String
-    still_declared: Boolean  -- present in a current body this tick
+    still_declared: Boolean         -- present in a current body this tick
+    retired_by_contradiction: Boolean  -- a contradiction fact has retired it
 }
 
 entity Sense {
@@ -140,22 +142,13 @@ rule DescopedEdgeIsContradictedNotDeleted {
     requires: e.still_declared = false
 
     ensures:
-        Contradiction.created(edge: e)
+        e.retired_by_contradiction = true
 
     @guidance
-        -- The contradiction retires the derived edge without deleting the
-        -- original dependency-declared fact (invariant I1 in goal-liveness).
-        -- Only edges whose declaring side was observed this tick are re-judged.
-}
-
-------------------------------------------------------------
--- Entities (correction)
-------------------------------------------------------------
-
-entity Contradiction {
-    -- The append-only correction fact: retires a prior fact's derived effect
-    -- without removing it from the log.
-    edge: BodyEdge
+        -- The retirement is an appended `contradiction` fact that flips the
+        -- derived edge without deleting the original dependency-declared fact
+        -- (invariant I1 in goal-liveness). Only edges whose declaring side was
+        -- observed this tick are re-judged.
 }
 
 ------------------------------------------------------------
