@@ -63,7 +63,46 @@ test('buildWorkflows: review ripeStageId resolves to the "ripe" stage', () => {
   assert.deepEqual(review.ripeRequires, { labels: [], labelPrefixes: [] });
 });
 
-import { renderWorkflow, renderSection, ripeLabel } from '../src/diagram.mjs';
+import { renderWorkflow, renderSection, ripeLabel, esc } from '../src/diagram.mjs';
+
+test('esc: existing safety — strips backslashes, downgrades double quotes', () => {
+  assert.equal(esc('a\\b"c'), "abc"[0] + 'b' + "'" + 'c'); // "ab'c"
+  assert.equal(esc('say "hi"'), "say 'hi'");
+});
+
+test('esc: neutralizes mermaid metacharacters #, {, } as entity codes', () => {
+  // Inside a quoted hexagon {{"…"}} these are entity/node-shape metachars; a
+  // consumer config with them in an id/situation/stage must still parse.
+  assert.equal(esc('#'), '#35;');
+  assert.equal(esc('{'), '#123;');
+  assert.equal(esc('}'), '#125;');
+  // No raw metacharacter survives, and the escape's own # is not re-doubled.
+  const out = esc('cites src/{a}#b.mjs');
+  assert.equal(out, 'cites src/#123;a#125;#35;b.mjs');
+  assert.ok(!/[{}]/.test(out));
+});
+
+test('renderWorkflow: gate label with #/{/} renders a parseable hexagon', () => {
+  const wf = {
+    goalType: 'delivery',
+    ripeStageId: 'ripe',
+    ripeRequires: { labels: [], labelPrefixes: [] },
+    nodes: [
+      { kind: 'stage', id: 'shaped', label: 'shaped', preds: [] },
+      { kind: 'stage', id: 'ripe', label: 'ripe', preds: ['shaped'] },
+      { kind: 'gate', id: 'braces', label: 'has {braces}#hash',
+        gate: { situation: 'cites src/{x}.mjs', authority: 'sensor', artifact: 'g', mode: 'shadow' } },
+    ],
+  };
+  const out = renderWorkflow(wf);
+  const line = out.split('\n').find((l) => l.startsWith('  g_braces{{'));
+  const inner = line.slice('  g_braces{{"'.length, -'"}}'.length);
+  // No bare {/} may survive, and every # must be part of a mermaid entity code
+  // (#NNN;) — that is exactly what keeps the hexagon parseable.
+  assert.ok(!/[{}]/.test(inner), `raw brace in label: ${inner}`);
+  assert.ok(!/#(?!\d+;)/.test(inner), `bare # in label: ${inner}`);
+  assert.ok(inner.includes('#123;braces#125;#35;hash'));
+});
 
 test('ripeLabel: renders labels and prefixes, null when empty', () => {
   assert.equal(ripeLabel({ labels: ['shaped'], labelPrefixes: [] }), "requires label 'shaped'");

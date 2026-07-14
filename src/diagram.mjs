@@ -79,8 +79,18 @@ export function buildWorkflows({ goalTypes, deliveryTemplate, gates }) {
 // --- mermaid rendering ------------------------------------------------------
 
 const sanitize = (id) => id.replace(/[^A-Za-z0-9]/g, '_');
-// Mermaid quoted-label safety: drop backslashes, downgrade double quotes.
-const esc = (s) => String(s).replace(/\\/g, '').replace(/"/g, "'");
+// Mermaid quoted-label safety. Drop backslashes and downgrade double quotes,
+// then neutralize the entity/node-shape metacharacters #, {, } via mermaid
+// entity codes so a consumer config whose gate id / situation / stage name
+// contains one still yields a parseable {{"…"}} hexagon. `#` is escaped first
+// so the `#` in the `{`/`}` entity codes is not itself re-doubled.
+export const esc = (s) =>
+  String(s)
+    .replace(/\\/g, '')
+    .replace(/#/g, '#35;')
+    .replace(/"/g, "'")
+    .replace(/\{/g, '#123;')
+    .replace(/\}/g, '#125;');
 
 export function ripeLabel(ripeRequires) {
   const parts = [];
