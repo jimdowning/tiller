@@ -69,6 +69,56 @@ export const GATES = [
     appliesWhen: { goalType: 'delivery', bodyCites: 'src/(classify|schema)\\.mjs' },
     requires: { artifact: 'spec-sync', source: 'operator' },
   },
+
+  // -------------------------------------------------------------------------
+  // ADR 0003 — per-issue quality gates (PRE-DISPATCH half). These concern the
+  // plan/approach, so they gate ripeness and live here. The DELIVERY half
+  // (tests-pass, code-review, docs-updated) concerns the implemented change;
+  // it would deadlock as a ripeness gate, so it is specified in ADR 0003 as
+  // the contributor merge bar and becomes enforce-able DAG nodes on #17.
+  //
+  // Two-tier appliesWhen: value-clear + spec-present bind on every delivery
+  // goal (universal core); alternatives-considered + arch-fit bind only on a
+  // `nontrivial`-labelled goal. Authority: agent-certifies, the operator
+  // stamps only value-clear + arch-fit (ADR 0003 §authority scheme).
+  //
+  // spec-present binds universally with a `mechanical` opt-out (ADR 0002
+  // plumbing carve-out) — during shadow the opt-out is a process convention
+  // (the operator ignores the would-park for `mechanical` issues); the
+  // enforce-graduation of spec-present decides the concrete mechanism.
+  // -------------------------------------------------------------------------
+  {
+    id: 'value-clear',
+    description: 'the issue states its value — feature: what value to whom; infra: what capability; bug: how critical (ADR 0003)',
+    mode: 'shadow',
+    authority: 'operator',
+    appliesWhen: { goalType: 'delivery' },
+    requires: { artifact: 'value-clear', source: 'operator' },
+  },
+  {
+    id: 'spec-present',
+    description: 'an allium spec specifies the adopted approach and checks clean — agent-certified; `mechanical` label opts out (ADR 0003)',
+    mode: 'shadow',
+    authority: 'agent',
+    appliesWhen: { goalType: 'delivery' },
+    requires: { artifact: 'spec-present' },
+  },
+  {
+    id: 'alternatives-considered',
+    description: 'alternatives were considered and the adopted-solution rationale justified — agent-certified (ADR 0003)',
+    mode: 'shadow',
+    authority: 'agent',
+    appliesWhen: { goalType: 'delivery', labelsInclude: 'nontrivial' },
+    requires: { artifact: 'alternatives-considered' },
+  },
+  {
+    id: 'arch-fit',
+    description: 'the approach fits the architecture or documents the extension — operator-attested (ADR 0003)',
+    mode: 'shadow',
+    authority: 'operator',
+    appliesWhen: { goalType: 'delivery', labelsInclude: 'nontrivial' },
+    requires: { artifact: 'arch-fit', source: 'operator' },
+  },
 ];
 
 export const SENSORS = {

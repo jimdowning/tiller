@@ -1,10 +1,10 @@
 {
-  "ts": "2026-07-14T07:03:11.390Z",
-  "tick": 2,
+  "ts": "2026-07-14T17:00:03.891Z",
+  "tick": 1,
   "counts": {
     "ripe": 0,
     "holding": 0,
-    "parked": 9,
+    "parked": 11,
     "waiting": 1,
     "done": 0,
     "external": 2,
@@ -183,6 +183,44 @@
           "overdue": null
         }
       ]
+    },
+    {
+      "goal": 17,
+      "title": "Implement ADR 0001 development-template DAG substrate (+ goal-liveness schema)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T16:37:28Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 18,
+      "title": "diagram: esc() doesn't neutralize #/{/} for consumer-config mermaid labels",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T16:47:57Z",
+          "overdue": null
+        }
+      ]
     }
   ],
   "waiting": [
@@ -210,9 +248,49 @@
       {
         "goal": 10,
         "gate": "classifier-fuzz"
+      },
+      {
+        "goal": 17,
+        "gate": "classifier-fuzz"
       }
     ],
     "wouldPark": [
+      {
+        "goal": 1,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 1,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 6,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 6,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 7,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 7,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
       {
         "goal": 8,
         "gate": "classifier-spec-sync",
@@ -220,10 +298,112 @@
         "detail": "no spec-sync verdict yet (authority: operator)"
       },
       {
+        "goal": 8,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 8,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
         "goal": 10,
         "gate": "classifier-spec-sync",
         "mode": "shadow",
         "detail": "no spec-sync verdict yet (authority: operator)"
+      },
+      {
+        "goal": 10,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 10,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 12,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 12,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 13,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 13,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 14,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 14,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 15,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 15,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 17,
+        "gate": "classifier-spec-sync",
+        "mode": "shadow",
+        "detail": "no spec-sync verdict yet (authority: operator)"
+      },
+      {
+        "goal": 17,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 17,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 18,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 18,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
       }
     ],
     "enforced": []

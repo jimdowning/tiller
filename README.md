@@ -190,6 +190,18 @@ graph LR
   g_classifier_spec_sync{{"classifier-spec-sync<br/>when cites src/(classify|schema).mjs<br/>operator · spec-sync · shadow"}}
   g_classifier_spec_sync -.gate.-> s_ripe
   class g_classifier_spec_sync gate
+  g_value_clear{{"value-clear<br/>when always<br/>operator · value-clear · shadow"}}
+  g_value_clear -.gate.-> s_ripe
+  class g_value_clear gate
+  g_spec_present{{"spec-present<br/>when always<br/>agent · spec-present · shadow"}}
+  g_spec_present -.gate.-> s_ripe
+  class g_spec_present gate
+  g_alternatives_considered{{"alternatives-considered<br/>when label nontrivial<br/>agent · alternatives-considered · shadow"}}
+  g_alternatives_considered -.gate.-> s_ripe
+  class g_alternatives_considered gate
+  g_arch_fit{{"arch-fit<br/>when label nontrivial<br/>operator · arch-fit · shadow"}}
+  g_arch_fit -.gate.-> s_ripe
+  class g_arch_fit gate
 ```
 
 ### journey
