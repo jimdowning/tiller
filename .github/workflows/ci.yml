@@ -1,8 +1,9 @@
-# CI for the engine repo (tiller#1). Three gates:
+# CI for the engine repo (tiller#1). Four gates:
 #   test — the node:test suite (zero-dep, node --test)
 #   fuzz — the E2-port property fuzzer as a regression gate (12k seeds)
 #   spec — allium check/analyse on the classifier contract spec
 #          (errors fail; warnings ratcheted — scripts/check-spec.mjs)
+#   diagram — the README Workflows mermaid section matches the active config
 name: CI
 
 on:
@@ -56,3 +57,13 @@ jobs:
           allium --version
       - name: Classifier contract spec check
         run: node scripts/check-spec.mjs spec/goal-liveness.allium
+
+  diagram:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: README workflow diagrams in sync
+        run: TILLER_CONFIG=./tiller.config.mjs node src/diagram.mjs --check README.md
