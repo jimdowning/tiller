@@ -71,3 +71,51 @@ export function buildWorkflows({ goalTypes, deliveryTemplate, gates }) {
     return { goalType, nodes, ripeStageId: ripeStageId(stages), ripeRequires };
   });
 }
+
+// --- mermaid rendering ------------------------------------------------------
+
+const sanitize = (id) => id.replace(/[^A-Za-z0-9]/g, '_');
+// Mermaid quoted-label safety: drop backslashes, downgrade double quotes.
+const esc = (s) => String(s).replace(/\\/g, '').replace(/"/g, "'");
+
+export function ripeLabel(ripeRequires) {
+  const parts = [];
+  for (const l of ripeRequires.labels) parts.push(`label '${l}'`);
+  for (const p of ripeRequires.labelPrefixes) parts.push(`label ${p}*`);
+  return parts.length ? `requires ${parts.join(' + ')}` : null;
+}
+
+export function renderWorkflow(wf) {
+  const L = ['```mermaid', 'graph LR'];
+  L.push('  classDef gate fill:#fff,stroke:#999,stroke-dasharray:4 3;');
+  L.push('  classDef enforce stroke:#c00,stroke-width:2px;');
+  const stages = wf.nodes.filter((n) => n.kind === 'stage');
+  const gates = wf.nodes.filter((n) => n.kind === 'gate');
+  const rl = ripeLabel(wf.ripeRequires);
+
+  for (const s of stages) L.push(`  s_${sanitize(s.id)}("${esc(s.label)}")`);
+  for (const s of stages) {
+    for (const p of s.preds) {
+      const label = s.id === wf.ripeStageId && rl ? `|${esc(rl)}|` : '';
+      L.push(`  s_${sanitize(p)} -->${label} s_${sanitize(s.id)}`);
+    }
+  }
+  for (const g of gates) {
+    const gid = `g_${sanitize(g.id)}`;
+    const meta = `${g.gate.authority} · ${g.gate.artifact} · ${g.gate.mode}`;
+    L.push(`  ${gid}{{"${esc(g.label)}<br/>when ${esc(g.gate.situation)}<br/>${esc(meta)}"}}`);
+    if (wf.ripeStageId) L.push(`  ${gid} -.gate.-> s_${sanitize(wf.ripeStageId)}`);
+    L.push(`  class ${gid} gate${g.gate.mode === 'enforce' ? ',enforce' : ''}`);
+  }
+  L.push('```');
+  return L.join('\n');
+}
+
+export function renderSection(workflows) {
+  const L = [];
+  for (const wf of workflows) {
+    L.push(`### ${wf.goalType}`, '', renderWorkflow(wf), '');
+  }
+  while (L.length && L[L.length - 1] === '') L.pop();
+  return L.join('\n');
+}
