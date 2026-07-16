@@ -71,15 +71,32 @@ function listOpenItems(repo) {
 }
 
 /**
- * Fetch the live open set as raw GitHub items:
- * { number, isPR, title, body, state, createdAt, closedAt, labels,
- *   events: [{ts, event, ...}], comments: [{ts, author, body}] }
+ * Fetch the live open set. The LIST is always fetched in full (cheap — ~1 API
+ * page per 100 items — and the shrink guard #4 needs the complete list); the
+ * per-item DRILL (timeline + comments, the network-bound part) is gated by
+ * `shouldDrill` (#6): the caller passes a watermark predicate over
+ * `{ number, isPR, updatedAt }`, and items it declines come back shallow in
+ * `skipped`. Facts for a skipped item are already in the caller's append-only
+ * log — an unchanged `updated_at` means re-drilling would re-derive facts
+ * that all dedup to no-ops, so skipping just skips paying for the no-op.
+ *
+ * Returns { drilled, skipped }:
+ *   drilled — full items { number, isPR, updatedAt, title, body, state,
+ *             createdAt, closedAt, labels, events: [{ts, event, ...}],
+ *             comments: [{ts, author, body}] }
+ *   skipped — shallow { number, isPR, updatedAt }
  */
-export function fetchOpenSet(repo) {
+export function fetchOpenSet(repo, { shouldDrill = () => true } = {}) {
   const items = listOpenItems(repo);
-  const out = [];
+  const drilled = [];
+  const skipped = [];
   for (const it of items) {
     const num = it.number;
+    const head = { number: num, isPR: !!it.pull_request, updatedAt: it.updated_at ?? null };
+    if (!shouldDrill(head)) {
+      skipped.push(head);
+      continue;
+    }
     let timeline = [];
     try {
       timeline = gh(['api', `repos/${repo}/issues/${num}/timeline`, '--paginate']);
@@ -92,9 +109,8 @@ export function fetchOpenSet(repo) {
     } catch (e) {
       console.error(`  comments fail #${num}: ${e.message.split('\n')[0]}`);
     }
-    out.push({
-      number: num,
-      isPR: !!it.pull_request,
+    drilled.push({
+      ...head,
       title: it.title || '',
       body: it.body || '',
       state: it.state,
@@ -112,7 +128,7 @@ export function fetchOpenSet(repo) {
       })),
     });
   }
-  return out;
+  return { drilled, skipped };
 }
 
 /**
