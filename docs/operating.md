@@ -24,9 +24,10 @@ senses its own backlog; to sense another repo, prefix with `TILLER_CONFIG=...`
 | `node src/tick.mjs --offline` | re-derive the plan from the **stored** fact log only — no network. Same log ⇒ same plan |
 | `node src/tick.mjs --no-hysteresis` | report **raw** ripeness, skipping the hysteresis damping |
 | `node src/tick.mjs --accept-shrink` | accept an implausibly shrunken open set (a genuine mass-close) — see [degraded senses](architecture.md#degraded-senses) |
+| `node src/tick.mjs --full` | drill every item, ignoring the `updated_at` watermarks (#6) — run periodically (the scheduled workflow does, weekly) to catch cross-reference-only changes that don't bump an item's `updated_at` |
 | `node src/explain.mjs <n>` | why isn't `#n` ripe, and exactly what would clear each of its parks |
 | `node src/next.mjs` | capability-matched selection: what can **this** session pick up right now, given the tools it has? (`--as operator`, `--capabilities gh,pnpm`, `--all` to show skipped-and-why) |
-| `node src/attest.mjs <n> <gate> pass` | record an **operator** verdict stamp for a gate (e.g. `attest.mjs 10 journey-articulation pass`) |
+| `node src/attest.mjs <n> <gate> pass` | record a verdict stamp for a gate. **`--post`** posts it as a `tiller:attest` issue comment the next tick senses — durable across machines/CI (#23); without it the fact is appended to the machine-local log only. `--source operator\|agent\|sensor` (default `operator`) declares the claimed authority — capped at sense time by the comment author's ceiling, so agents must say `--source agent` |
 | `node src/heartbeat.mjs <source>` | append a liveness pulse from a `/loop`-wrapped stream (`source` = a goal number, which fires that goal's `budget-exhausted` unpark, or a stream name) |
 | `node src/migrate.mjs` | read-only milestones → journeys migration plan |
 | `node src/diagram.mjs` | render the workflow diagrams from the active config (`--write README.md` to update, `--check README.md` to fail on drift) |
@@ -70,6 +71,7 @@ caller's cwd):
 | `stateDir` | fact log, hysteresis memory, meta cache — machine-local; **gitignore it** |
 | `snapshotDir` | derived-plan snapshots `<date>.{json,md}` — date-named, so conflict-free; **commit them** |
 | `repoRoot` | the sensed repo's root, used by mechanical sensors such as spec-check (default: the config file's directory) |
+| `OPERATORS` | GitHub logins whose `tiller:attest` comments may claim **operator** authority (#23). Default `[]`: no comment can carry an operator-source verdict until the repo declares its operators. `*[bot]` authors cap at `sensor`, everyone else at `agent`; over-claims are downgraded to the author's ceiling, never trusted |
 | `DELIVERY_TEMPLATE` | optional per-repo override of the delivery goal's stages + ripeness contract (replaces the engine default in `src/templates.mjs`; consumers that don't override keep the heavyweight default) |
 
 <a id="target-repo"></a>
@@ -113,6 +115,11 @@ per-repo override exists for exactly this:
   sensor, input-hash keyed on `src/classify.mjs` + `src/schema.mjs` + the fuzzer)
   and `classifier-spec-sync` (the `spec/goal-liveness.allium` update, attested by
   the **operator** — an agent-sourced pass does not satisfy it).
+- The plan stays current **on a schedule** (#24): `.github/workflows/tick.yml`
+  runs a daily watermarked tick (weekly `--full`) and commits the snapshot.
+  `.tiller/state/` continuity is a best-effort Actions cache — a cold cache is
+  safe by design (sensing is stateless and idempotent), and attestations reach
+  the runner as sensed comments (#23), never as local state.
 
 <a id="pin-bump"></a>
 ## The consumer pin-bump gate

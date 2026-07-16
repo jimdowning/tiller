@@ -20,10 +20,14 @@ data coming _in_, the right column is durable state.
 
 ```
 GitHub (read-only)                          state/facts.jsonl (append-only)
-   │  sense/github.mjs   — fetch the open set, timelines, comments, and bodies
-   ▼
+   │  sense/github.mjs   — fetch the open set, timelines, comments, and bodies.
+   │                       The LIST is always full; the per-item drill is
+   │                       watermarked on updated_at (#6) — unchanged items are
+   ▼                       skipped and keep their prior view (state/sense-watermarks.json).
 sense/translate.mjs      — ALL lexical heuristics live here: reading labels,
-   │                       task-lists, body markers into facts. This is the one
+   │                       task-lists, body markers, and `tiller:attest` comments
+   │                       (#23: durable validity verdicts, authority capped by the
+   │                       author's ceiling) into facts. This is the one
    │                       deliberately imperative stage — sensing can't be pure,
    ▼                       so it's quarantined here. Event-derived facts carry
    │                       event timestamps, so re-sensing dedups to a no-op.
@@ -42,7 +46,12 @@ hysteresis.mjs           — the damping gate (see Concepts). ASYMMETRIC: a goal
    │                       first ripening dispatches immediately; a goal that has
    │                       de-committed once holds open on re-ripening.
    ▼
-tick.mjs                 — orchestration + snapshots/<date>.{json,md}
+tick.mjs                 — orchestration + snapshots/<date>.{json,md}. When the
+                           frontier is empty (ripe = holding = 0 with parked
+                           goals), the snapshot is marked `starved` and carries
+                           the aggregate readout the per-goal wedge audit
+                           can't give (#25): parks by reason, unpark events
+                           ranked by goals touched.
 ```
 
 Supporting modules: `gates.mjs` (situational-gate evaluation), `templates.mjs`
@@ -80,7 +89,11 @@ best-effort:
   of the event that produced them, so re-sensing the same GitHub state produces
   facts that dedup to a no-op. Combined with the append-only log, this means
   `tick --offline` re-derives the entire plan from stored facts with no network,
-  and gets the same answer a live tick would.
+  and gets the same answer a live tick would. Attestations posted as
+  `tiller:attest` comments (#23) extend this to verdicts: an operator stamp or
+  agent cert recorded that way is re-derivable on **any** machine — CI runners,
+  worktrees, fresh checkouts — where a locally-appended `attest.mjs` fact exists
+  in one `stateDir` only.
 
 Together these are what let the [pin-bump gate](operating.md#pin-bump) work: run
 the old and new engine over the same stored facts and diff the buckets — any
