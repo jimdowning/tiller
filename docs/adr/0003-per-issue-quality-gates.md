@@ -91,21 +91,38 @@ the *process* itself in allium.
   `spec-present` (agent) subsumes "checks clean" for now. Porting the sensor as a mechanical
   adjunct is an optional follow-up. **(Resolved 2026-07-16 — see Update below.)**
 
-## Update (2026-07-16) — spec-check-clean ported; spec-present + spec-check-clean → enforce
+## Update (2026-07-16) — spec-check-clean ported; a brief enforce experiment reverted on a ripeness-gate deadlock
 
 The optional follow-up is taken. `tiller.config.mjs` now carries the `spec-check-clean` gate
-(`authority: 'sensor'`, `appliesWhen` a cited `spec/*.allium` path) backed by an `spec-check`
+(`authority: 'sensor'`, `appliesWhen` a cited `spec/*.allium` path) backed by a `spec-check`
 `kind: 'allium'` sensor (`allium check` + `analyse`, `failOn: ['error','warning']`) — the
 mechanical other half of `spec-present`'s coverage judgement. Two gates now express the request
 "each issue has a spec covering the changes, checking clean": `spec-present` (agent — coverage)
 and `spec-check-clean` (sensor — cleanliness of cited specs).
 
-By operator decision, **both go straight to `mode: 'enforce'`**, overriding this ADR's
-shadow-first-then-graduate-on-divergence-record default: the clean-check is deterministic and
-low-false-positive, and the operator wants the presence judgement to bite now. Note the scope
-limit that survives the override — `spec-check-clean` fires only on issues that *cite* a spec,
-so it enforces cleanliness, not presence; presence remains `spec-present`'s (agent-certified)
-job, and enforcing it parks any delivery goal lacking that certification.
+Both were briefly set to `mode: 'enforce'` at operator request, then **reverted to `shadow` the
+same day** on a demonstrated deadlock. As a *ripeness* (pre-dispatch) gate, `spec-check-clean`
+parks any issue citing a spec that carries warnings — **including the issue whose own deliverable
+is that spec**. Observed live: **#14** (retire `goal-liveness.allium`'s stale header), **#20**
+(spec fidelity for it), and **#17** all park on `goal-liveness.allium`'s two *documentary-
+declaration* warnings (`entity Fact`, `enum AbsenceSentinel` — deliberately-declared substrate/
+concept names the linter flags as unused). The sting: **#17 is the very issue that would make
+clean-check a proper delivery gate**, and the ripeness gate parked it. Meanwhile `spec-present`
+at enforce parks every delivery goal lacking an agent certification, and tiller dispatches
+nothing yet — so no stream *produces* that certification. Net: with both enforced, **no
+remediation issue could come ripe** without an operator hand-editing the spec or attesting,
+outside the loop. tiller's per-goal wedge audit did not flag it (each park's unpark — "the spec
+becomes clean" — is individually producible), so the loop looked live while globally stuck behind
+a blocked producer.
+
+This is exactly ADR 0003's own reasoning for `tests-pass`: a mechanical check over the
+**delivered artifact** deadlocks as a ripeness gate. Resolution: both gates stay **`shadow`** —
+they surface the warnings and missing-spec signals in every snapshot (visible, attention-driving)
+without blocking the fix. The enforce-able forms are tracked where they cannot deadlock:
+`spec-check-clean` as a **delivery/merge DAG node on #17** (blocks merge, not dispatch), and
+`spec-present`'s enforce **gated on a cert-producing conditioning stream** (there is none while
+tiller is read-only). The lesson generalises: *the enforce-able form of a mechanical
+delivered-artifact check is a delivery gate, never a pre-dispatch ripeness gate.*
 
 ## Alternatives considered
 
@@ -125,12 +142,17 @@ job, and enforcing it parks any delivery goal lacking that certification.
 - Add the four pre-dispatch gates to `tiller.config.mjs`; create the three labels; regenerate
   the README Workflows section (`node src/diagram.mjs --write`) so the diagram-drift gate
   stays green.
-- Graduate the remaining shadow gates (`value-clear`, `alternatives-considered`, `arch-fit`)
-  to enforce individually on their divergence record. (`spec-present` + `spec-check-clean` went
-  to enforce on 2026-07-16 — see Update.) At `spec-present`'s enforcement, the `mechanical`
-  opt-out is a process convention (operator ignores the park for `mechanical`-labelled issues);
-  a concrete machine mechanism is still open.
+- Graduate the shadow gates (`value-clear`, `spec-present`, `alternatives-considered`,
+  `arch-fit`) to enforce individually on their divergence record. **All remain shadow** — the
+  2026-07-16 enforce experiment on `spec-present` + `spec-check-clean` was reverted the same day
+  (see Update). At `spec-present`'s enforcement the `mechanical` opt-out needs a concrete machine
+  mechanism, AND a stream must *produce* the agent certification (tiller dispatches nothing yet).
 - Author the three delivery gates as DAG nodes when #17 lands (`reviewed` / `verified` the
-  first delivery nodes, per ADR 0001).
+  first delivery nodes, per ADR 0001). **`spec-check-clean`'s enforce-able form joins them here**
+  as a delivery/merge node — a mechanical delivered-artifact check deadlocks as a ripeness gate,
+  so its enforcing home is the DAG, not `GATES` (see Update).
 - ~~Optionally port the engine-default `spec-check-clean` sensor gate into `tiller.config.mjs`.~~
-  **Done 2026-07-16** (see Update).
+  **Done 2026-07-16** (see Update) — ported at `mode: 'shadow'`.
+- **File a shaped issue** to resolve `goal-liveness.allium`'s two documentary-declaration
+  warnings (`entity Fact`, `enum AbsenceSentinel`) — a spec-modelling judgement (reference /
+  annotate-intentional / accept), unblocking the shadow `spec-check-clean` signal on #14/#17/#20.

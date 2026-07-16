@@ -98,7 +98,7 @@ export const GATES = [
   {
     id: 'spec-present',
     description: 'an allium spec specifies the adopted approach and checks clean — agent-certified; `mechanical` label opts out (ADR 0003)',
-    mode: 'enforce',
+    mode: 'shadow',
     authority: 'agent',
     appliesWhen: { goalType: 'delivery' },
     requires: { artifact: 'spec-present' },
@@ -111,12 +111,20 @@ export const GATES = [
     // `allium check` + `analyse` with 0 errors/0 warnings. Ported verbatim from
     // engine.config.mjs; binds only when a `spec/*.allium` path is cited, so it
     // enforces cleanliness of cited specs, not presence (that is spec-present).
-    // Straight to `mode: 'enforce'` by operator decision (2026-07-16): the check
-    // is deterministic and low-false-positive, so it skips the shadow-first
-    // divergence-record graduation the other gates follow.
+    //
+    // STAYS `shadow`. It was briefly enforced (2026-07-16) and reverted the same
+    // day: as a *ripeness* gate it deadlocks spec-authoring work — it parks any
+    // issue citing a spec that carries warnings, including the issue whose own
+    // deliverable IS that spec (observed: #14/#17/#20 all park on
+    // goal-liveness.allium's two documentary-declaration warnings; #17, which
+    // would make this a proper *delivery* gate, was itself parked). This is ADR
+    // 0003's tests-pass lesson — a mechanical check over the DELIVERED artifact
+    // deadlocks as a ripeness gate. Its enforce-able form is a delivery/merge
+    // DAG node on #17, not a pre-dispatch gate. In shadow it still surfaces the
+    // warnings in every snapshot without blocking the fix.
     id: 'spec-check-clean',
     description: 'cited Allium specs pass `allium check` + `analyse` with 0 errors/warnings (ADR 0003 follow-up)',
-    mode: 'enforce',
+    mode: 'shadow',
     authority: 'sensor',
     appliesWhen: { goalType: 'delivery', bodyCites: 'spec/[A-Za-z0-9_-]+\\.allium' },
     requires: { artifact: 'spec-check' },
