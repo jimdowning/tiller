@@ -63,6 +63,12 @@ const base = configPath ? dirname(configPath) : ENGINE_ROOT;
 export const GATES = mod.GATES;
 export const SENSORS = mod.SENSORS;
 
+// GitHub logins whose attestation comments may claim operator authority
+// (#23). Empty by default: with no declared operators, no sensed comment can
+// carry an operator-source verdict — the safe default for a repo that hasn't
+// decided who its operators are.
+export const OPERATORS = mod.OPERATORS ?? [];
+
 // Per-repo delivery template (the thin-process consumer shape, tiller#1).
 // A config may export DELIVERY_TEMPLATE = { stages, ripeRequires } to replace
 // the engine defaults in templates.mjs — e.g. a thin repo whose whole

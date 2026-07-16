@@ -19,6 +19,11 @@ export const snapshotDir = '.tiller/snapshots';
 // The sensed repo's root (sensor cwd) — this file lives at it.
 export const repoRoot = '.';
 
+// GitHub logins whose `tiller:attest ...` comments may claim operator
+// authority (#23). Everyone else's claims cap at their ceiling (`*[bot]` →
+// sensor, otherwise agent) — an over-claim is downgraded, never trusted.
+export const OPERATORS = ['jimdowning'];
+
 // ---------------------------------------------------------------------------
 // THIN delivery template (tiller#1). This repo runs a much lighter process
 // than the consumer it was extracted from: the whole ripeness contract is one

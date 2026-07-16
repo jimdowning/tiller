@@ -18,7 +18,9 @@ import {
 // The ripeness label contract is PER-REPO: config.mjs resolves it from the
 // target repo's DELIVERY_TEMPLATE override (thin repos may gate on a single
 // `shaped` label), defaulting to the engine's templates.mjs contract.
-import { RIPE_REQUIRES } from '../config.mjs';
+// OPERATORS is the per-repo list of GitHub logins whose attestation comments
+// may carry operator authority (#23).
+import { RIPE_REQUIRES, OPERATORS } from '../config.mjs';
 
 const bodyHash = (s) => createHash('sha256').update(s || '').digest('hex').slice(0, 12);
 const isMeta = (title = '') => META_TRACKER_PREFIXES.some((p) => title.startsWith(p));
@@ -34,13 +36,58 @@ const conditioningComplete = (labels) =>
 const PR_CLOSES = /\b(close[sd]?|fix(e[sd])?|resolve[sd]?)\s+#(\d+)/gi;
 const ANY_REF = /#(\d+)/g;
 
+// ---------------------------------------------------------------------------
+// Attestation comments (#23): `tiller:attest <artifact> <pass|fail>
+// [source=<operator|agent|sensor>] [— note]` on a goal's issue becomes a
+// validity-verdict fact. This is what makes attestations DURABLE: a verdict
+// recorded as a comment is re-derivable from GitHub on any machine — CI
+// ticks, worktrees, other checkouts — where a locally-appended fact
+// (attest.mjs without --post) exists only in one stateDir.
+//
+// AUTHORITY CEILING: the claimed source is capped by what the comment AUTHOR
+// may claim — logins in the per-repo OPERATORS list may claim `operator`,
+// `*[bot]` authors may claim `sensor`, everyone else caps at `agent`. A claim
+// above ceiling is DOWNGRADED to the ceiling and marked, never trusted — an
+// agent session running under the operator's account must claim
+// `source=agent` explicitly, and an unattributed claim defaults to `agent`.
+export const ATTEST_LINE =
+  /^\s*tiller:attest\s+([a-z0-9][a-z0-9-]*)\s+(pass|fail)(?:\s+source=(operator|agent|sensor))?(?:\s+(?:—|--)\s*(.*\S))?\s*$/gim;
+
+const AUTHORITY_RANK = { agent: 0, sensor: 1, operator: 2 };
+
+export function authorityCeiling(author, operators = OPERATORS) {
+  if (author && operators.includes(author)) return 'operator';
+  if (author && /\[bot\]$/.test(author)) return 'sensor';
+  return 'agent';
+}
+
+/** All attestation facts a single comment carries (0..n lines). */
+export function attestationFacts(goal, comment, operators = OPERATORS) {
+  const out = [];
+  const ceiling = authorityCeiling(comment.author, operators);
+  for (const m of (comment.body || '').matchAll(ATTEST_LINE)) {
+    const [, artifact, verdict, claimedRaw, note] = m;
+    const claimed = claimedRaw ?? 'agent';
+    const effective = AUTHORITY_RANK[claimed] <= AUTHORITY_RANK[ceiling] ? claimed : ceiling;
+    out.push({
+      ts: comment.ts, kind: 'validity-verdict', goal, artifact, verdict,
+      source: effective,
+      ...(effective !== claimed ? { claimedSource: claimed, downgraded: true } : {}),
+      ...(note ? { note } : {}),
+    });
+  }
+  return out;
+}
+
 /**
  * @param items    raw items from sense/github.mjs fetchOpenSet (or fixtures)
  * @param externals Map<number,{state,title,closedAt,createdAt}> resolved refs
  * @param nowTs    ISO timestamp for body-observed facts (injectable for tests)
+ * @param opts     { operators } — attestation authority list (injectable for tests)
  * @returns {{facts: object[], meta: Map<number, object>, referenced: Set<number>}}
  */
-export function translate(items, externals = new Map(), nowTs = new Date().toISOString()) {
+export function translate(items, externals = new Map(), nowTs = new Date().toISOString(),
+  { operators = OPERATORS } = {}) {
   const facts = [];
   const meta = new Map();
   const referenced = new Set();
@@ -187,6 +234,9 @@ export function translate(items, externals = new Map(), nowTs = new Date().toISO
         commentDeps.clear();
         push({ ts: c.ts, kind: 'unpark', goal: n, reason: 'untracked-dependency' });
       }
+      // durable attestations (#23): comment-borne validity verdicts,
+      // event-timestamped so re-sensing dedups to a no-op
+      for (const f of attestationFacts(n, c, operators)) push(f);
     }
 
     // ---- body-borne structure (issues-only journey membership) --------------

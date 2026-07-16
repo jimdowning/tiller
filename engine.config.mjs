@@ -48,3 +48,8 @@ export const SENSORS = {
     failOn: ['error', 'warning'], // info diagnostics are allowed
   },
 };
+
+// GitHub logins whose `tiller:attest ...` comments may claim operator
+// authority (#23). Everyone else's claims cap at their ceiling (`*[bot]` →
+// sensor, otherwise agent) — an over-claim is downgraded, never trusted.
+export const OPERATORS = ['jimdowning'];
