@@ -25,6 +25,14 @@
 --     implausibly shrunken open set ABORTS the tick BEFORE any fact append or
 --     meta write — a degraded sense never clobbers state. `--accept-shrink`
 --     accepts a genuine mass-close explicitly.
+--   - Incremental drill-down (#6): the open-set LIST is always sensed in full
+--     (the shrink guard needs it); the per-item drill (timeline + comments) may
+--     be skipped only under a trusted updated_at watermark, and a skipped item's
+--     prior view — its goal meta and its external refs — is carried forward
+--     verbatim, never forgotten. Anything without a trustworthy watermark drills.
+--   - Attestation comments (#23): a structured `tiller:attest` comment senses
+--     into a validity-verdict fact whose source is capped by the AUTHOR's
+--     authority ceiling — an over-claim is downgraded and marked, never trusted.
 --
 -- Excludes:
 --   - The lexical heuristics (which regex reads a dependency block, a focus
@@ -79,6 +87,34 @@ entity BodyEdge {
     depends_on: String
     still_declared: Boolean         -- present in a current body this tick
     retired_by_contradiction: Boolean  -- a contradiction fact has retired it
+}
+
+entity ItemSense {
+    -- One open item's drill decision in a tick (#6). The list fetch always
+    -- covers every item; the expensive per-item drill is skipped only when the
+    -- watermark is TRUSTED: a previous updated_at exists, the current one has
+    -- not advanced, the item's goal meta survived, and no --full override is
+    -- in force. A skipped item's prior view (goal meta, external refs) is
+    -- reused verbatim — unchanged updated_at means body and comments are
+    -- unchanged, so the stored view is still exact.
+    number: String
+    watermark_trusted: Boolean   -- prev updatedAt present, not advanced, meta intact, no --full
+    drilled: Boolean
+    prior_view_reused: Boolean   -- goal meta carried forward; stored refs still re-resolved
+}
+
+entity AttestationComment {
+    -- A `tiller:attest <artifact> <pass|fail> [source=...]` comment line (#23),
+    -- sensed into a validity-verdict fact. Authority ranks: agent 0, sensor 1,
+    -- operator 2. The CEILING is the author's: config-declared operators may
+    -- claim operator, `*[bot]` authors sensor, everyone else agent. An absent
+    -- claim defaults to agent — an agent session running under the operator's
+    -- account cannot inherit operator authority by omission.
+    claimed_rank: Integer     -- what the comment says (absent claim = 0, agent)
+    ceiling_rank: Integer     -- what its author may claim
+    effective_rank: Integer   -- what the fact carries
+    downgraded: Boolean       -- claim exceeded ceiling and was capped (marked on the fact)
+    has_event_timestamp: Boolean  -- identity is the comment ts → re-sensing dedups
 }
 
 entity Sense {
@@ -151,6 +187,56 @@ rule DescopedEdgeIsContradictedNotDeleted {
         -- observed this tick are re-judged.
 }
 
+rule UntrustedWatermarkDrills {
+    -- Incremental sensing's safe default (#6): an item without a trustworthy
+    -- watermark — no previous entry, no updated_at on either side, goal meta
+    -- gone, or a --full override — is drilled. Skipping is an optimisation
+    -- that must be EARNED by evidence nothing changed, never assumed.
+    when: i: ItemSense.created
+    requires: i.watermark_trusted = false
+
+    ensures:
+        i.drilled = true
+
+    @guidance
+        -- The known blind spot: a cross-reference event on ANOTHER item does
+        -- not bump this item's updated_at. The periodic --full tick (weekly in
+        -- the scheduled workflow) is the floor that bounds its staleness.
+}
+
+rule SkippedItemReusesPriorView {
+    -- A skipped item is never a forgotten item (#6): its goal meta (body,
+    -- declared edges, hashes) is carried forward verbatim, and its stored
+    -- external refs keep being re-resolved every tick — a referenced dep that
+    -- closed since the last drill must still come to read as done.
+    when: i: ItemSense.created
+    requires: i.drilled = false
+
+    ensures:
+        i.prior_view_reused = true
+
+    @guidance
+        -- The facts a drill would re-derive are already in the append-only log
+        -- (unchanged history re-derives byte-identical facts that dedup to
+        -- no-ops) — the skip only skips paying for the no-op.
+}
+
+rule AttestationOverclaimIsDowngraded {
+    -- Authority ceiling (#23): a claim above the author's ceiling is capped to
+    -- the ceiling and MARKED as downgraded — recorded, auditable, never
+    -- trusted at the claimed rank.
+    when: a: AttestationComment.created
+    requires: a.claimed_rank > a.ceiling_rank
+
+    ensures:
+        a.effective_rank = a.ceiling_rank
+
+    @guidance
+        -- Downgrade, not rejection: the verdict still lands at the rank the
+        -- author legitimately holds, so a mis-claimed agent cert is still an
+        -- agent cert. The `downgraded` mark keeps the over-claim observable.
+}
+
 ------------------------------------------------------------
 -- Invariants
 ------------------------------------------------------------
@@ -177,4 +263,27 @@ invariant UnresolvedRefStaysBlocking {
     -- reads done.
     for r in ExternalRefs where resolved = false:
         r.reads_done = false
+}
+
+invariant UndrilledNeverForgotten {
+    -- The incremental-sensing safety property (#6): every skipped item's prior
+    -- view is reused — no goal silently drops out of classification, no
+    -- external ref stops being re-resolved, because a drill was skipped.
+    for i in ItemSenses where drilled = false:
+        i.prior_view_reused = true
+}
+
+invariant EffectiveAuthorityNeverExceedsCeiling {
+    -- The attestation trust boundary (#23): whatever a comment claims, the
+    -- fact it senses into never carries more authority than its author holds.
+    for a in AttestationComments:
+        a.effective_rank <= a.ceiling_rank
+}
+
+invariant AttestationIsEventDerived {
+    -- Attestation facts inherit the comment's timestamp as identity, so they
+    -- are re-derivable from GitHub on any machine and re-sensing is a no-op —
+    -- the durability property that machine-local attest facts lack.
+    for a in AttestationComments:
+        a.has_event_timestamp = true
 }
