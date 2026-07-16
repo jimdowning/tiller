@@ -39,7 +39,10 @@ This one decision buys several properties:
   the timestamp of the event that produced them, re-sensing the same GitHub state
   produces the same facts — re-observing dedups to a no-op. You can re-derive the
   whole plan from the stored log with no network at all (`tick --offline`), and
-  get the same answer.
+  get the same answer. This extends to verdicts: an attestation posted as a
+  `tiller:attest` issue comment is just more GitHub state, re-derivable on any
+  machine — where a verdict appended only to a local log exists on one machine
+  and nowhere else.
 - **Auditability.** Any decision can be explained after the fact by reading the
   facts that led to it. Nothing is lost to an in-place update.
 - **Conflict-free storage.** Because facts are only ever appended (and pruned by
@@ -145,6 +148,23 @@ examples:
   `sensor` (a command or CI run decides), `agent` (produces an artifact for
   another to judge), and `operator` (a human stamp).
 
+### Where verdicts come from — and why an over-claim can't be trusted
+
+A verdict recorded with plain `attest.mjs` lands in the machine-local fact log:
+fine for solo work, invisible to a CI tick or another checkout. The durable form
+is a **`tiller:attest <artifact> <pass|fail> [source=...]` issue comment**
+(`attest.mjs --post` writes one) — the next tick, on *any* machine, senses it
+into a verdict fact, timestamped by the comment so re-sensing dedups to a no-op.
+
+Because a comment *claims* its authority, the claim is capped by an **authority
+ceiling** derived from who wrote it: logins in the repo's `OPERATORS` config may
+claim `operator`, `*[bot]` authors may claim `sensor`, and everyone else caps at
+`agent` — which is also the default when no source is claimed. A claim above the
+ceiling is **downgraded to the ceiling and marked**, never trusted. The subtle
+case this closes: an agent session running under the operator's own account
+cannot acquire operator authority by omission — it must claim `source=agent`,
+and an operator stamp is only ever a deliberate human act.
+
 ### Shadow mode: observe before you bind
 
 A brand-new gate is dangerous: turn it on across a live backlog and it might
@@ -218,6 +238,20 @@ ripens when **every** park clears. The main reasons:
 The common thread: **nothing is blocked silently, and nothing un-blocks itself
 except by a rule you can point to.** That's what makes `explain <issue>`
 trustworthy — it reads these reasons straight back to you.
+
+### When *everything* is blocked: the empty-frontier readout
+
+Per-goal reasons have a blind spot: a loop can be **globally stuck while every
+individual check passes**. Each park's clearing event can be individually
+producible — yet if nothing is ripe, nothing can run to produce any of them.
+(This happened here: a gate-enforcement experiment parked every remediation
+issue on conditions only a dispatched session could satisfy, and the per-goal
+wedge audit saw nothing wrong.) So when the frontier is empty — zero ripe, zero
+ripening, with parked goals present — the snapshot is marked **`starved`** and
+carries the aggregate view: parks grouped by reason, and the clearing events
+ranked by how many goals each would touch. One line like *"`shaped` label →
+would touch 12 goals"* tells you where the whole system's bottleneck is, in a
+way twelve per-goal explanations never would.
 
 ---
 

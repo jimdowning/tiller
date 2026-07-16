@@ -151,9 +151,11 @@ picks it up. Each limitation below is a tracked goal in this repo's own backlog
 - **Sensing is issue-shaped only.** It ingests issue timelines, comments, and
   bodies — not PR reviews, CI `workflow_run` conclusions, or repo-file predicates.
   So the `verified` stage of the delivery template isn't derivable yet. (#7)
-- **No heartbeats emitted yet.** `heartbeat` facts are modelled in the classifier
-  and schema, but nothing appends them. Wiring loop-driven sessions to emit
-  heartbeats is the dead-loop detector, and comes with the entry skills. (#8)
+- **Heartbeats have an appender but no wiring.** `heartbeat` facts are modelled
+  in the classifier and schema, and `src/heartbeat.mjs` can append one — but no
+  loop-driven stream calls it yet, and the absence-side timeout that would
+  surface a dead stream isn't built. Both halves are the dead-loop detector and
+  come with the entry skills. (#8)
 - **Thin stage reporting.** Reporting beyond `conditioned` / `pr#N[-merged]` is
   minimal; the template registry exists and is per-repo overridable, but it only
   gates ripeness via the label contract. (#9)

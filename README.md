@@ -21,11 +21,11 @@ Tiller exists to make those answers **cheap, current, and trustworthy** — so a
 ## What you get
 
 - **Quality bars enforced before dispatch.** Each kind of work has to clear the **gates** that _its kind_ needs — spec clean, value clear, alternatives considered, architecture fit, operator approved — before it's ever treated as ready. The quality conversation happens upstream, once, where it's cheap; not at PR review, where it's expensive and usually too late. Gates can run in **shadow mode** first, so you see a bar's effect before it binds.
-- **Attention rationed to what needs a human.** An operator stamps (`attest`) only the gates that genuinely require judgement; everything mechanical is derived. Blocked work that has waited too long is surfaced as **attention** the moment it crosses its deadline — so the few things that need a person find you, instead of you hunting for them.
+- **Attention rationed to what needs a human.** An operator stamps (`attest`) only the gates that genuinely require judgement; everything mechanical is derived. A stamp posted as a `tiller:attest` issue comment is **durable** — any machine's tick senses it, with the claimed authority capped by who wrote it (an over-claim is downgraded, never trusted). Blocked work that has waited too long is surfaced as **attention** the moment it crosses its deadline — so the few things that need a person find you, instead of you hunting for them.
 - **One always-current plan.** Every issue lands in exactly one bucket — **ready to start**, **blocked**, **waiting on its children**, or **done** — with no gaps and no double-counting. Run a tick and you have today's picture.
 - **A reason for every "not yet."** Nothing is blocked silently. Each blocked issue carries _every_ reason it's blocked and the specific event that would clear each one — a label, a dependency closing, an operator's stamp, a date arriving. Ask `explain <issue>` and get the exact list.
 - **No hand-maintained state.** No milestones to curate, no status columns to drag. Membership and dependencies are _declared_ in issue bodies; the plan is derived. Editing an issue re-derives its place on the next tick, for free.
-- **Safe by construction.** Tiller only _reads_ GitHub. It writes nothing back, dispatches nothing, and can't move your work. The worst a bad tick can do is show you a stale plan.
+- **Safe by construction.** The tick only _reads_ GitHub. It writes nothing back, dispatches nothing, and can't move your work — the worst a bad tick can do is show you a stale plan. The one deliberate writer is the `attest` stamp tool with `--post`, and the only thing it ever writes is the comment you asked it to post.
 - **Deterministic and auditable.** The same facts always produce the same plan. Everything tiller senses is recorded in an append-only log, so any decision can be replayed and explained after the fact.
 - **Nothing to install.** Plain Node, zero dependencies. Tests run on `node --test`.
 
@@ -70,14 +70,14 @@ Every **tick** runs the same five-stage pipeline, which is really two moves.
 
 **Derive the plan** — turn the repo's reality into buckets, mechanically:
 
-1. **Sense** — fetch the open issues, their timelines, comments, and bodies from GitHub (read-only).
+1. **Sense** — fetch the open issues, their timelines, comments, and bodies from GitHub (read-only). The full open-set list is fetched every tick, but the expensive per-issue drill-down is **incremental**: items whose `updated_at` hasn't moved since the last tick are skipped, so a warm no-change tick costs one list fetch instead of minutes of pagination.
 2. **Store** — translate what it saw into **facts** and append them to a log. Facts are never edited or deleted; a later fact can _contradict_ an earlier one, but the history stays. This is what makes ticks replayable.
 3. **Classify** — a pure function folds the whole fact log so that every issue lands in **exactly one** bucket: `ripe` (ready), `parked` (blocked), `waiting` (a parent whose children aren't done), or `done`.
 
 **Left-shift quality and ration attention** — decide what's actually fit to start, and what needs a person:
 
 4. **Verify & gate** — before a `ripe` issue is treated as dispatchable, a thin verifier and a set of **situational gates** check the prerequisites that _this kind_ of work needs (e.g. a spec is clean, an operator has approved). This is where quality moves upstream: a bar that would otherwise be discovered at PR review is enforced before dispatch. New gates start in **shadow mode** — they report what they _would_ block without blocking anything, so a rule's effect is observable before it binds.
-5. **Snapshot** — write the derived plan to `.tiller/snapshots/<date>.md` (and `.json`), surfacing what's ready, what's blocked and why, and what has waited long enough to need a human. A short **hysteresis** step damps flicker so a rapidly-toggling issue doesn't churn the plan.
+5. **Snapshot** — write the derived plan to `.tiller/snapshots/<date>.md` (and `.json`), surfacing what's ready, what's blocked and why, and what has waited long enough to need a human. A short **hysteresis** step damps flicker so a rapidly-toggling issue doesn't churn the plan. And if the frontier is **empty** — nothing ripe at all while goals sit parked — the snapshot says so out loud, with the aggregate reasons and the events that would reopen it, because a globally stuck loop can pass every per-goal check while quietly going nowhere.
 
 The result is a plan you can trust the same way twice. The concepts in bold — facts, buckets, gates, hysteresis — are the whole mental model; [**Concepts**](docs/concepts.md) explains each one and _why_ it's shaped that way.
 
@@ -90,7 +90,8 @@ node src/tick.mjs                 # one live reconciliation tick (read-only fetc
 node src/tick.mjs --offline       # re-derive from the stored fact log only (no network)
 node src/explain.mjs 419          # why isn't #419 ready, and what exactly would clear it?
 node src/next.mjs                 # what can THIS session pick up right now?
-node src/attest.mjs 10 journey-articulation pass   # record an operator's approval stamp
+node src/attest.mjs 10 journey-articulation pass --post   # post an approval stamp as an issue
+                                  # comment — durable: any machine's next tick senses it
 ```
 
 Development checks (also run in CI):
@@ -98,7 +99,7 @@ Development checks (also run in CI):
 ```bash
 node --test 'test/*.test.mjs'     # the test suite
 node test/fuzz.mjs                # classifier property fuzzer (the correctness gate)
-node scripts/check-spec.mjs spec/goal-liveness.allium   # check the classifier contract spec
+node scripts/check-spec.mjs       # check every behavioral contract spec in spec/
 ```
 
 To point tiller at a **different** repo (e.g. as a submodule), give it a config file — see [Operating tiller](docs/operating.md).

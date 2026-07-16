@@ -35,9 +35,9 @@ senses its own backlog; to sense another repo, prefix with `TILLER_CONFIG=...`
 Development checks:
 
 ```bash
-node --test 'test/*.test.mjs'                          # the test suite
-node test/fuzz.mjs                                     # classifier property fuzzer (the CI correctness gate)
-node scripts/check-spec.mjs spec/goal-liveness.allium  # allium check/analyse on the contract spec
+node --test 'test/*.test.mjs'   # the test suite
+node test/fuzz.mjs              # classifier property fuzzer (the CI correctness gate)
+node scripts/check-spec.mjs     # allium check/analyse on every spec in spec/ (warnings ratcheted)
 ```
 
 <a id="configuration"></a>
@@ -151,10 +151,14 @@ membership diff; an unintended one is a regression caught **before** the pin lan
 |---|---|---|
 | **test** | `node --test 'test/*.test.mjs'` | the unit/integration suite |
 | **fuzz** | `node test/fuzz.mjs 12000` | classifier totality — every fact-log yields exactly one bucket |
-| **spec** | `node scripts/check-spec.mjs spec/goal-liveness.allium` | the classifier contract spec (errors fail; warnings ratcheted) |
+| **spec** | `node scripts/check-spec.mjs` | every behavioral contract spec in `spec/` (errors fail; warnings ratcheted per spec) |
 | **diagram** | `TILLER_CONFIG=./tiller.config.mjs node src/diagram.mjs --check README.md` | the README Workflows section matches the active config |
 
 The **diagram** gate is why the Workflows section in `README.md` is
 marker-fenced and must not be hand-edited: after any change to the goal templates
 or gates, regenerate it with `node src/diagram.mjs --write README.md` and commit
 the result.
+
+Alongside the gates, `.github/workflows/tick.yml` runs the [scheduled
+self-tick](#self-hosting) — not a gate, but the cadence that keeps the
+self-hosted derived plan current.
