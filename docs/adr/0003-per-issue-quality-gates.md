@@ -89,7 +89,23 @@ the *process* itself in allium.
   would-park for `mechanical` issues); its enforce-graduation must pick a concrete mechanism.
 - The engine-default `spec-check-clean` sensor gate is **not** in `tiller.config.mjs`;
   `spec-present` (agent) subsumes "checks clean" for now. Porting the sensor as a mechanical
-  adjunct is an optional follow-up.
+  adjunct is an optional follow-up. **(Resolved 2026-07-16 — see Update below.)**
+
+## Update (2026-07-16) — spec-check-clean ported; spec-present + spec-check-clean → enforce
+
+The optional follow-up is taken. `tiller.config.mjs` now carries the `spec-check-clean` gate
+(`authority: 'sensor'`, `appliesWhen` a cited `spec/*.allium` path) backed by an `spec-check`
+`kind: 'allium'` sensor (`allium check` + `analyse`, `failOn: ['error','warning']`) — the
+mechanical other half of `spec-present`'s coverage judgement. Two gates now express the request
+"each issue has a spec covering the changes, checking clean": `spec-present` (agent — coverage)
+and `spec-check-clean` (sensor — cleanliness of cited specs).
+
+By operator decision, **both go straight to `mode: 'enforce'`**, overriding this ADR's
+shadow-first-then-graduate-on-divergence-record default: the clean-check is deterministic and
+low-false-positive, and the operator wants the presence judgement to bite now. Note the scope
+limit that survives the override — `spec-check-clean` fires only on issues that *cite* a spec,
+so it enforces cleanliness, not presence; presence remains `spec-present`'s (agent-certified)
+job, and enforcing it parks any delivery goal lacking that certification.
 
 ## Alternatives considered
 
@@ -109,8 +125,12 @@ the *process* itself in allium.
 - Add the four pre-dispatch gates to `tiller.config.mjs`; create the three labels; regenerate
   the README Workflows section (`node src/diagram.mjs --write`) so the diagram-drift gate
   stays green.
-- Graduate each gate from shadow to enforce individually on its divergence record; at
-  `spec-present`'s graduation, decide the `mechanical` opt-out mechanism.
+- Graduate the remaining shadow gates (`value-clear`, `alternatives-considered`, `arch-fit`)
+  to enforce individually on their divergence record. (`spec-present` + `spec-check-clean` went
+  to enforce on 2026-07-16 — see Update.) At `spec-present`'s enforcement, the `mechanical`
+  opt-out is a process convention (operator ignores the park for `mechanical`-labelled issues);
+  a concrete machine mechanism is still open.
 - Author the three delivery gates as DAG nodes when #17 lands (`reviewed` / `verified` the
   first delivery nodes, per ADR 0001).
-- Optionally port the engine-default `spec-check-clean` sensor gate into `tiller.config.mjs`.
+- ~~Optionally port the engine-default `spec-check-clean` sensor gate into `tiller.config.mjs`.~~
+  **Done 2026-07-16** (see Update).

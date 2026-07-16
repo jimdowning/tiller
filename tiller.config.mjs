@@ -98,10 +98,28 @@ export const GATES = [
   {
     id: 'spec-present',
     description: 'an allium spec specifies the adopted approach and checks clean — agent-certified; `mechanical` label opts out (ADR 0003)',
-    mode: 'shadow',
+    mode: 'enforce',
     authority: 'agent',
     appliesWhen: { goalType: 'delivery' },
     requires: { artifact: 'spec-present' },
+  },
+  {
+    // The mechanical adjunct to `spec-present` (ADR 0003 follow-up: "port the
+    // engine-default spec-check-clean sensor gate"). Where spec-present is the
+    // agent's coverage judgement ("a spec covers this issue's changes"), this
+    // gate is the deterministic other half: any spec the issue CITES must pass
+    // `allium check` + `analyse` with 0 errors/0 warnings. Ported verbatim from
+    // engine.config.mjs; binds only when a `spec/*.allium` path is cited, so it
+    // enforces cleanliness of cited specs, not presence (that is spec-present).
+    // Straight to `mode: 'enforce'` by operator decision (2026-07-16): the check
+    // is deterministic and low-false-positive, so it skips the shadow-first
+    // divergence-record graduation the other gates follow.
+    id: 'spec-check-clean',
+    description: 'cited Allium specs pass `allium check` + `analyse` with 0 errors/warnings (ADR 0003 follow-up)',
+    mode: 'enforce',
+    authority: 'sensor',
+    appliesWhen: { goalType: 'delivery', bodyCites: 'spec/[A-Za-z0-9_-]+\\.allium' },
+    requires: { artifact: 'spec-check' },
   },
   {
     id: 'alternatives-considered',
@@ -128,5 +146,13 @@ export const SENSORS = {
     command: ['node', 'test/fuzz.mjs', '5000'],
     // the files whose change invalidates a previous verdict (input-hash keyed)
     inputs: ['src/classify.mjs', 'src/schema.mjs', 'test/fuzz.mjs'],
+  },
+  // Backs the `spec-check-clean` gate: judges each spec cited in a goal body,
+  // verdict input-hashed on the cited files' contents (editing a spec
+  // re-triggers the check). info diagnostics are allowed.
+  'spec-check': {
+    kind: 'allium',
+    commands: [['allium', 'check'], ['allium', 'analyse']],
+    failOn: ['error', 'warning'],
   },
 };

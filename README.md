@@ -130,9 +130,12 @@ graph LR
   g_value_clear{{"value-clear<br/>when always<br/>operator · value-clear · shadow"}}
   g_value_clear -.gate.-> s_ripe
   class g_value_clear gate
-  g_spec_present{{"spec-present<br/>when always<br/>agent · spec-present · shadow"}}
+  g_spec_present{{"spec-present<br/>when always<br/>agent · spec-present · enforce"}}
   g_spec_present -.gate.-> s_ripe
-  class g_spec_present gate
+  class g_spec_present gate,enforce
+  g_spec_check_clean{{"spec-check-clean<br/>when cites spec/[A-Za-z0-9_-]+.allium<br/>sensor · spec-check · enforce"}}
+  g_spec_check_clean -.gate.-> s_ripe
+  class g_spec_check_clean gate,enforce
   g_alternatives_considered{{"alternatives-considered<br/>when label nontrivial<br/>agent · alternatives-considered · shadow"}}
   g_alternatives_considered -.gate.-> s_ripe
   class g_alternatives_considered gate
