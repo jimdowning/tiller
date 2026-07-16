@@ -1,56 +1,24 @@
 {
-  "ts": "2026-07-16T07:21:46.086Z",
-  "tick": 3,
+  "ts": "2026-07-16T07:26:26.523Z",
+  "tick": 1,
   "counts": {
-    "ripe": 5,
+    "ripe": 1,
     "holding": 0,
     "parked": 12,
     "waiting": 1,
     "done": 0,
-    "external": 4,
+    "external": 3,
     "wedges": 0
   },
   "starved": false,
   "starvation": null,
   "ripe": [
     {
-      "goal": 6,
-      "title": "Incremental sensing: only drill into issues updated since the last sense",
-      "goalType": "delivery",
-      "focus": null,
-      "routeFloor": "inline",
-      "stage": "ripe"
-    },
-    {
       "goal": 22,
       "title": "Resolve goal-liveness.allium's two documentary-declaration warnings (Fact, AbsenceSentinel)",
       "goalType": "delivery",
       "focus": null,
       "routeFloor": "fullteam",
-      "stage": "ripe"
-    },
-    {
-      "goal": 23,
-      "title": "Durable attestations: sense validity-verdict facts from structured issue comments",
-      "goalType": "delivery",
-      "focus": null,
-      "routeFloor": "fullteam",
-      "stage": "ripe"
-    },
-    {
-      "goal": 24,
-      "title": "Self-hosting cadence: scheduled Actions tick commits the daily snapshot",
-      "goalType": "delivery",
-      "focus": null,
-      "routeFloor": "fullteam",
-      "stage": "ripe"
-    },
-    {
-      "goal": 25,
-      "title": "Global starvation surfacing: flag an empty frontier the per-goal wedge audit can't see",
-      "goalType": "delivery",
-      "focus": null,
-      "routeFloor": "inline",
       "stage": "ripe"
     }
   ],
@@ -299,15 +267,11 @@
     }
   ],
   "done": 0,
-  "external": 4,
+  "external": 3,
   "wedges": [],
   "gates": {
     "met": [
       {
-        "goal": 6,
-        "gate": "spec-present"
-      },
-      {
         "goal": 8,
         "gate": "classifier-fuzz"
       },
@@ -318,20 +282,10 @@
       {
         "goal": 17,
         "gate": "classifier-fuzz"
-      },
-      {
-        "goal": 23,
-        "gate": "spec-present"
       }
     ],
     "wouldPark": [
       {
-        "goal": 6,
-        "gate": "value-clear",
-        "mode": "shadow",
-        "detail": "no value-clear verdict yet (authority: operator)"
-      },
-      {
         "goal": 7,
         "gate": "value-clear",
         "mode": "shadow",
@@ -419,7 +373,7 @@
         "goal": 14,
         "gate": "spec-check-clean",
         "mode": "shadow",
-        "detail": "latest verdict: fail ({\"info\":10,\"warning\":4})"
+        "detail": "latest verdict: fail"
       },
       {
         "goal": 15,
@@ -455,7 +409,7 @@
         "goal": 17,
         "gate": "spec-check-clean",
         "mode": "shadow",
-        "detail": "latest verdict: fail ({\"info\":10,\"warning\":4})"
+        "detail": "latest verdict: fail"
       },
       {
         "goal": 19,
@@ -485,7 +439,7 @@
         "goal": 20,
         "gate": "spec-check-clean",
         "mode": "shadow",
-        "detail": "latest verdict: fail ({\"info\":10,\"warning\":4})"
+        "detail": "latest verdict: fail"
       },
       {
         "goal": 21,
@@ -503,7 +457,7 @@
         "goal": 21,
         "gate": "spec-check-clean",
         "mode": "shadow",
-        "detail": "latest verdict: fail ({\"info\":10,\"warning\":4})"
+        "detail": "latest verdict: fail"
       },
       {
         "goal": 22,
@@ -521,43 +475,7 @@
         "goal": 22,
         "gate": "spec-check-clean",
         "mode": "shadow",
-        "detail": "latest verdict: fail ({\"info\":10,\"warning\":4})"
-      },
-      {
-        "goal": 23,
-        "gate": "value-clear",
-        "mode": "shadow",
-        "detail": "no value-clear verdict yet (authority: operator)"
-      },
-      {
-        "goal": 23,
-        "gate": "spec-check-clean",
-        "mode": "shadow",
-        "detail": "latest verdict: fail ({\"info\":26,\"warning\":2})"
-      },
-      {
-        "goal": 24,
-        "gate": "value-clear",
-        "mode": "shadow",
-        "detail": "no value-clear verdict yet (authority: operator)"
-      },
-      {
-        "goal": 24,
-        "gate": "spec-present",
-        "mode": "shadow",
-        "detail": "no spec-present verdict yet (authority: agent)"
-      },
-      {
-        "goal": 25,
-        "gate": "value-clear",
-        "mode": "shadow",
-        "detail": "no value-clear verdict yet (authority: operator)"
-      },
-      {
-        "goal": 25,
-        "gate": "spec-present",
-        "mode": "shadow",
-        "detail": "no spec-present verdict yet (authority: agent)"
+        "detail": "latest verdict: fail"
       },
       {
         "goal": 26,
