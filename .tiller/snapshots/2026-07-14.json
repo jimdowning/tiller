@@ -1,37 +1,18 @@
 {
-  "ts": "2026-07-14T17:00:03.891Z",
-  "tick": 1,
+  "ts": "2026-07-14T20:11:59.571Z",
+  "tick": 2,
   "counts": {
     "ripe": 0,
     "holding": 0,
-    "parked": 11,
+    "parked": 12,
     "waiting": 1,
     "done": 0,
-    "external": 2,
+    "external": 3,
     "wedges": 0
   },
   "ripe": [],
   "holding": [],
   "parked": [
-    {
-      "goal": 1,
-      "title": "Self-hosting bootstrap: CI, thin delivery template, dogfood tiller-on-tiller",
-      "goalType": "delivery",
-      "focus": null,
-      "stage": null,
-      "reason": "needs-conditioning",
-      "overdue": false,
-      "parks": [
-        {
-          "reason": "needs-conditioning",
-          "unpark": [
-            "artifact-produced:conditioned"
-          ],
-          "since": "2026-07-08T07:13:40Z",
-          "overdue": null
-        }
-      ]
-    },
     {
       "goal": 6,
       "title": "Incremental sensing: only drill into issues updated since the last sense",
@@ -221,6 +202,44 @@
           "overdue": null
         }
       ]
+    },
+    {
+      "goal": 19,
+      "title": "Skill bootstrap: repo-native minimal skills + /verify project skill",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T17:05:32Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 20,
+      "title": "Spec fidelity for goal-liveness.allium: propagate tests + recurring weed drift check",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T17:05:34Z",
+          "overdue": null
+        }
+      ]
     }
   ],
   "waiting": [
@@ -237,7 +256,7 @@
     }
   ],
   "done": 0,
-  "external": 2,
+  "external": 3,
   "wedges": [],
   "gates": {
     "met": [
@@ -256,18 +275,6 @@
     ],
     "wouldPark": [
       {
-        "goal": 1,
-        "gate": "value-clear",
-        "mode": "shadow",
-        "detail": "no value-clear verdict yet (authority: operator)"
-      },
-      {
-        "goal": 1,
-        "gate": "spec-present",
-        "mode": "shadow",
-        "detail": "no spec-present verdict yet (authority: agent)"
-      },
-      {
         "goal": 6,
         "gate": "value-clear",
         "mode": "shadow",
@@ -401,6 +408,30 @@
       },
       {
         "goal": 18,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 19,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 19,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 20,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 20,
         "gate": "spec-present",
         "mode": "shadow",
         "detail": "no spec-present verdict yet (authority: agent)"
