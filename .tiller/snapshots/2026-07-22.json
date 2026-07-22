@@ -1,0 +1,495 @@
+{
+  "ts": "2026-07-22T07:43:54.264Z",
+  "tick": 8,
+  "counts": {
+    "ripe": 1,
+    "holding": 0,
+    "parked": 12,
+    "waiting": 1,
+    "done": 0,
+    "external": 3,
+    "wedges": 0
+  },
+  "starved": false,
+  "starvation": null,
+  "ripe": [
+    {
+      "goal": 22,
+      "title": "Resolve goal-liveness.allium's two documentary-declaration warnings (Fact, AbsenceSentinel)",
+      "goalType": "delivery",
+      "focus": null,
+      "routeFloor": "fullteam",
+      "stage": "ripe"
+    }
+  ],
+  "holding": [],
+  "parked": [
+    {
+      "goal": 7,
+      "title": "Sensing widening: PR reviews, workflow_run conclusions, repo-file predicates",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-10T20:41:54Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 8,
+      "title": "Emit heartbeat facts from loop-wrapped streams (dead-loop detector, E0-07)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-10T20:41:59Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 10,
+      "title": "Decomposition-freshness: decomposition-verdict fact + needs-decomposition park",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-10T20:42:15Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 12,
+      "title": "CI as a sensor-authority attesting agent (nightly e2e → validity-verdict facts)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-11T20:52:10Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 13,
+      "title": "UI-mockup prep gate (agentic-drafting half needs phase-dispatch #21 + Claude Design MCP)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-11T20:52:12Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 14,
+      "title": "Promote + relocate goal-liveness.allium into an authoritative spec/ tree",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T07:02:35Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 15,
+      "title": "Stage-projection spec + shadow spec-sync gate (retroactive for #9)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T07:02:36Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 17,
+      "title": "Implement ADR 0001 development-template DAG substrate (+ goal-liveness schema)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T16:37:28Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 19,
+      "title": "Skill bootstrap: repo-native minimal skills + /verify project skill",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T17:05:32Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 20,
+      "title": "Spec fidelity for goal-liveness.allium: propagate tests + recurring weed drift check",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-14T17:05:34Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 21,
+      "title": "Phase-aware dispatch: match per-DAG-node, not per-goal (generalize next.mjs onto the ADR 0001 substrate)",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-16T06:31:36Z",
+          "overdue": null
+        }
+      ]
+    },
+    {
+      "goal": 26,
+      "title": "Automate the consumer pin-bump gate: scripts/pin-diff.mjs",
+      "goalType": "delivery",
+      "focus": null,
+      "stage": null,
+      "reason": "needs-conditioning",
+      "overdue": false,
+      "parks": [
+        {
+          "reason": "needs-conditioning",
+          "unpark": [
+            "artifact-produced:conditioned"
+          ],
+          "since": "2026-07-16T07:04:32Z",
+          "overdue": null
+        }
+      ]
+    }
+  ],
+  "waiting": [
+    {
+      "goal": 16,
+      "title": "Whole-engine allium behavioral contracts (ADR 0002)",
+      "goalType": "journey",
+      "focus": null,
+      "stage": null,
+      "dependencies": [
+        14,
+        15
+      ]
+    }
+  ],
+  "done": 0,
+  "external": 3,
+  "wedges": [],
+  "gates": {
+    "met": [
+      {
+        "goal": 8,
+        "gate": "classifier-fuzz"
+      },
+      {
+        "goal": 10,
+        "gate": "classifier-fuzz"
+      },
+      {
+        "goal": 17,
+        "gate": "classifier-fuzz"
+      }
+    ],
+    "wouldPark": [
+      {
+        "goal": 7,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 7,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 8,
+        "gate": "classifier-spec-sync",
+        "mode": "shadow",
+        "detail": "no spec-sync verdict yet (authority: operator)"
+      },
+      {
+        "goal": 8,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 8,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 10,
+        "gate": "classifier-spec-sync",
+        "mode": "shadow",
+        "detail": "no spec-sync verdict yet (authority: operator)"
+      },
+      {
+        "goal": 10,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 10,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 12,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 12,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 13,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 13,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 14,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 14,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 14,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail"
+      },
+      {
+        "goal": 15,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 15,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 17,
+        "gate": "classifier-spec-sync",
+        "mode": "shadow",
+        "detail": "no spec-sync verdict yet (authority: operator)"
+      },
+      {
+        "goal": 17,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 17,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 17,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail"
+      },
+      {
+        "goal": 19,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 19,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 20,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 20,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 20,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail"
+      },
+      {
+        "goal": 21,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 21,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 21,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail"
+      },
+      {
+        "goal": 22,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 22,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      },
+      {
+        "goal": 22,
+        "gate": "spec-check-clean",
+        "mode": "shadow",
+        "detail": "latest verdict: fail"
+      },
+      {
+        "goal": 26,
+        "gate": "value-clear",
+        "mode": "shadow",
+        "detail": "no value-clear verdict yet (authority: operator)"
+      },
+      {
+        "goal": 26,
+        "gate": "spec-present",
+        "mode": "shadow",
+        "detail": "no spec-present verdict yet (authority: agent)"
+      }
+    ],
+    "enforced": []
+  }
+}
