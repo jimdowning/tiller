@@ -1,25 +1,55 @@
 # Tiller
 
-**Tiller answers one question, continuously and honestly: _what should be worked on next, and for everything that isn't ready — exactly why not, and what would change that?_**
+**Tiller exists to make human attention the resource a product organisation spends deliberately.** It concentrates that attention into a few high-value sessions, shifts verification early enough that everything else can run unsupervised, and then matches each unit of work to a session actually capable of doing it.
+
+Operationally, that means answering one question, continuously and honestly: _what should **this session** work on next given what it can do — and for everything that isn't ready, exactly why not, and what would change that?_
 
 It reads a repository's open issues, folds them into a single derived plan, and tells you which pieces of work are ready to start right now. Nothing is hand-maintained; the plan falls out of the facts. Tiller is read-only, deterministic, and has zero runtime dependencies.
 
-> **Status: preliminary.** The engine senses, classifies, and produces a derived plan on every tick. It does **not** yet dispatch work — it tells you what's ready; a human or an agent still picks it up. See [Current status & limitations](docs/architecture.md#current-status--limitations).
+> **Status: preliminary — the North Star below runs well ahead of the build.** What exists today is the sensing / classification / gating core: every tick derives the plan, evaluates quality gates in shadow mode, and `next` matches goals against a session's freshly probed capabilities. What does _not_ exist yet: the upstream pipeline that takes a vague product idea to a dispatchable spec, the delivery-half gates that need the ADR-0001 DAG, any notion of a node's **interaction mode**, and any necessity/sufficiency constraint on generated plans. Tiller also does not dispatch — it tells you what's ready; a human or an agent still picks it up. See [Current status & limitations](docs/architecture.md#current-status--limitations).
 
 ---
 
 ## Why tiller exists
 
-If you coordinate a large backlog — especially one worked by a mix of humans and autonomous agents — you hit the same problems:
+Four beliefs shape everything below. The first two are the bets. The second two are constraints that fall out of them.
 
-- **"What's actually ready?"** has no cheap answer. An issue can look ready and not be: it depends on unfinished work, it's waiting on a decision only a person can make, its spec isn't settled, or it's embargoed until a date. Working that out by hand, repeatedly, across a hundred issues, is the coordination tax.
-- **Milestones and status columns drift.** They're a second, hand-maintained source of truth that quietly disagrees with reality. Someone has to keep them honest, and nobody does.
-- **Agents pick up work that isn't ready.** An autonomous session that grabs a not-actually-startable issue burns tokens, produces half-work, and creates cleanup. The cost of a bad "what's next" answer is paid downstream, at scale.
-- **"Why isn't this moving?"** is expensive to answer. When a piece of work stalls, reconstructing _why_ — and what would unblock it — means re-reading threads and reverse-engineering intent.
+### 1. Human attention is the scarce resource — not agent throughput
 
-Tiller exists to make that answer **cheap, current, and trustworthy**. You keep working in GitHub issues as normal; tiller derives the plan from them so you never maintain it, and it derives it the same way every time so you can trust it.
+The default in agentic product development is to optimise for **maximum self-guided agent work**: give the agent a long leash and let it run. The residue lands on the humans — project management, bot-sitting, picking up half-finished work, answering an agent's question forty minutes into a session. That is neither where people shine nor where the throughput is.
+
+Throughput comes from the opposite move: **isolate and concentrate human attention into a few high-value sessions, and build automation around them.** Tiller is an attempt at the second half.
+
+One sharp consequence: every work node should sit at a pole — **human-only**, **highly interactive**, or **highly automated**. The common middle — an agent works for an hour, blocks to ask a question, then starts again — is an antipattern, not a workflow. It spends human attention at the moment of lowest leverage and least context. When a node behaves that way the finding is not "the human was slow to answer"; it is **that node is mis-structured**. The question it hit should have been settled before dispatch (see 2), or split out as a node of its own.
+
+### 2. Quality shifts left, and the shift now pays twice
+
+All-human processes could afford late quality: incremental definition of need, code review after the code exists, thin unit testing with defects caught by feedback loops downstream. Every one of those loops costs **parallelism** — each re-entry has to be merged back in. It was tolerable, because shifting quality left was expensive and the ROI often didn't clear.
+
+Agentic development moves both sides of that trade. The loops get *worse*: the pace mismatch between agent work and human work makes each re-entry cost more parallelism, not less. And left-shifting gets both cheaper and more valuable, because a verification artifact created early is no longer just a defect filter — it is **the specification that steers the agent and lets it supervise itself**. Left-shifted quality pays twice now.
+
+So tiller's job is to be **the place a product encodes how far left its V&V sits**, as rules the engine actually holds work against. For example:
+
+- every change states the value it adds to users, and how;
+- verification criteria and an allium spec exist before any code is written;
+- a change with UI has a human-validated mock before implementation begins;
+- multiple review passes have run **before** a PR is proposed, not after it.
+
+And the arc that follows: tiller should be how you get from **a vague idea about a product change to a delivered one** — refining and clarifying incrementally, at the early points where clarification is still cheap.
+
+### 3. Generated plans must pass necessity and sufficiency (constraint)
+
+Agents asked to write and maintain plans write **maximal** plans. Execute them and milestones recede into the distance, because work is added faster than it is done. This is the direct hazard of belief 2: the same automated elaboration that generates preconditions and specs also generates scope.
+
+So the generation in 2 only ships alongside constraints that apply **necessary** and **sufficient** rigorously — nothing enters a plan that isn't necessary to the stated value, and a plan is finished when it is sufficient, not when nothing further can be thought of.
+
+### 4. Dispatch is a match, not a queue (constraint)
+
+Sessions are not alike. One is an isolated VM with internet access and few tools — good for web research. One is a capable dev environment. Per belief 1, a few are interactive and most should not be. So the question a work-dispatch system has to answer is never "what is next" in the abstract; it is **"what is next _given my capabilities_"** — a match between a goal's requirements and a session's probed capabilities, with interactivity as a first-class capability alongside the tools.
 
 ## What you get
+
+In a shared backlog these beliefs cash out as concrete relief: "what's actually ready?" gets a cheap answer instead of a per-issue investigation; there are no hand-maintained milestones or status columns to drift out of true; an agent session can't burn an hour on work that was never startable; and "why isn't this moving?" is answered from the record rather than reconstructed from threads.
 
 - **One always-current plan.** Every issue lands in exactly one bucket — **ready to start**, **blocked**, **waiting on its children**, or **done** — with no gaps and no double-counting. Run a tick and you have today's picture.
 - **A reason for every "not yet."** Nothing is blocked silently. Each blocked issue carries _every_ reason it's blocked and the specific event that would clear each one — a label, a dependency closing, an operator's stamp, a date arriving. Ask `explain <issue>` and get the exact list.
@@ -70,7 +100,7 @@ Every **tick** runs the same five-stage pipeline. Each stage does one job:
 1. **Sense** — fetch the open issues, their timelines, comments, and bodies from GitHub (read-only).
 2. **Store** — translate what it saw into **facts** and append them to a log. Facts are never edited or deleted; a later fact can _contradict_ an earlier one, but the history stays. This is what makes ticks replayable.
 3. **Classify** — a pure function folds the whole fact log so that every issue lands in **exactly one** bucket: `ripe` (ready), `parked` (blocked), `waiting` (a parent whose children aren't done), or `done`.
-4. **Verify & gate** — before a `ripe` issue is treated as dispatchable, a thin verifier and a set of **situational gates** check the prerequisites that _this kind_ of work needs (e.g. a spec is clean, an operator has approved). New gates start in **shadow mode**: they report what they _would_ block without blocking anything, so a rule's effect is observable before it binds.
+4. **Verify & gate** — before a `ripe` issue is treated as dispatchable, a thin verifier and a set of **situational gates** check the prerequisites that _this kind_ of work needs (e.g. a spec is clean, an operator has approved). Gates are where belief 2 becomes mechanical: they are how a project states, in data, how far left its verification sits. New gates start in **shadow mode**: they report what they _would_ block without blocking anything, so a rule's effect is observable before it binds.
 5. **Snapshot** — write the derived plan to `.tiller/snapshots/<date>.md` (and `.json`). A short **hysteresis** step damps flicker so a rapidly-toggling issue doesn't churn the plan.
 
 The result is a plan you can trust the same way twice. The concepts in bold — facts, buckets, gates, hysteresis — are the whole mental model; [**Concepts**](docs/concepts.md) explains each one and _why_ it's shaped that way.
@@ -83,7 +113,7 @@ From a bare checkout of this repo (the engine runs against its own backlog by de
 node src/tick.mjs                 # one live reconciliation tick (read-only fetch)
 node src/tick.mjs --offline       # re-derive from the stored fact log only (no network)
 node src/explain.mjs 419          # why isn't #419 ready, and what exactly would clear it?
-node src/next.mjs                 # what can THIS session pick up right now?
+node src/next.mjs                 # what can THIS session pick up right now?  (belief 4)
 node src/attest.mjs 10 journey-articulation pass   # record an operator's approval stamp
 ```
 
